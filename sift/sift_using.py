@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 MIN_MATCH_COUNT = 10
 
 img1 = cv2.imread('box.png', 0)           # queryImage
-img2 = cv2.imread('box_in_scene.png', 0)  # trainImage
+img2 = cv2.imread('box.png', 0)  # trainImage
 
 # Compute SIFT keypoints and descriptors
 kp1, des1 = sift.calculate_keypoints_N_desctiptions(img1)
