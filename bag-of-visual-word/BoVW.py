@@ -140,8 +140,9 @@ class BoVW():
     def example(self) -> None:
         image_path = choice(self._image_paths)
         image = cv2.imread(image_path, 0)
+        image = self._scale(image)
         keypoints, _ = self._descriptor.compute(image)
-        for keypoint in keypoints[::]:
+        for keypoint in keypoints:
             x, y = keypoint.pt
             plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))
             
