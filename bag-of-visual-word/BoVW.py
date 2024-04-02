@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
 import os
-import matplotlib.pyplot as plt
-import pylab as pl
 import sift.sift as SIFT
+import matplotlib.pyplot as plt
 import ABS_classes.adstract_classes as ABC
-from sklearn.metrics import confusion_matrix,accuracy_score
+from random import choice
+from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
@@ -33,7 +33,6 @@ class BoVW(ABC.Descriptor):
         self._class_names = []
         
     def add_train_dataset(self, path: str) -> None:
-        self._clear_dataset()
         
         if not os.path.isdir(path):
             raise NameError("No such directory " + path)
@@ -73,13 +72,14 @@ class BoVW(ABC.Descriptor):
             for w in words:
                 image_features[i][w]+=1
         
-        self._stdslr  = StandardScaler().fit(image_features)
+        self._stdslr  = StandardScaler().partial_fit(image_features)
         image_features=self._stdslr.transform(image_features)
         
         self._clf.fit(image_features,np.array(self._image_classes))
         
       
     def testing(self, path_tests: str) -> float:
+        self._clear_dataset()
         self.add_train_dataset(path_tests)
           
         descriptor_list_test = []
@@ -136,16 +136,35 @@ class BoVW(ABC.Descriptor):
         predicted_class = self._clf.predict(test_features)[0]
 
         return (self._class_names[predicted_class], predicted_class)
-        
-        
+    
+    @property
+    def classes(self) -> dict:
+        classes = dict()
+        for k, name in enumerate(self._class_names):
+            classes[name] = k
+            
+        return classes
+    
+    @property
+    def example(self) -> None:
+        image_path = choice(self._image_paths)
+        image = cv2.imread(image_path)
+        keypoints, _ = self._descriptor.compute(image)
+        for keypoint in keypoints[::]:
+            x, y = keypoint.pt
+            plt.imshow(cv2.circle(image, (int(x), int(y)), 2, (0, 255, 255)))
+            
+        plt.savefig("example")
         
 if __name__ == "__main__":
     bovw = BoVW()
     bovw.add_train_dataset("dataset/train")
-    print("start modeling")
-    bovw.model_training()
-    print("Result:")
-    name = f"dataset/test/artist/mona_younger.jpeg"
-    while True:
-        print(bovw.classification_image(name))
-        name = input()
+    bovw.example
+    # print("start modeling")
+    # bovw.model_training()
+    # print(bovw.classes)
+    # print("Result:")
+    
+    # while True:
+    #     name = input()
+    #     print(bovw.classification_image(name))
