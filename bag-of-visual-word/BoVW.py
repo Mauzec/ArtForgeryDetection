@@ -45,7 +45,7 @@ class BoVW():
         descriptor_list = []
         
         for image_path in self._image_paths:
-            image=cv2.imread(image_path)
+            image=cv2.imread(image_path, 0)
             _, descriptor= self._descriptor.compute(image)
             descriptor_list.append((image_path, descriptor))
         
@@ -75,7 +75,7 @@ class BoVW():
           
         descriptor_list_test = []
         for image_path in self._image_paths:
-            image = cv2.imread(image_path)
+            image = cv2.imread(image_path, 0)
             _, descriptor_test = self._descriptor.compute(image)
             descriptor_list_test.append((image_path, descriptor_test))
         test_features=np.zeros((len(self._image_paths), self._number_words),"float32")
@@ -115,7 +115,7 @@ class BoVW():
         if not os.path.isfile(image_path):
             return ("no file", -1)
 
-        image = cv2.imread(image_path)
+        image = cv2.imread(image_path, 0)
         _, descriptor = self._descriptor.compute(image)
         
         test_features = np.zeros((1, self._number_words), "float32")
@@ -139,7 +139,7 @@ class BoVW():
     @property
     def example(self) -> None:
         image_path = choice(self._image_paths)
-        image = cv2.imread(image_path)
+        image = cv2.imread(image_path, 0)
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints[::]:
             x, y = keypoint.pt
