@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-import sift.sift as SIFT
+from sift.sift import DescriptorSift
 import matplotlib.pyplot as plt
 import ABS_classes.adstract_classes as ABC
 from random import choice
@@ -22,7 +22,7 @@ class Descriptor_CV2_SIFT(ABC.Descriptor):
 
 class BoVW(ABC.Descriptor):
     def __init__(self) -> None:
-        self._descriptor = Descriptor_CV2_SIFT()
+        self._descriptor = DescriptorSift()
         self._image_paths = []
         self._dataset = []
         self._image_classes = []
@@ -54,7 +54,7 @@ class BoVW(ABC.Descriptor):
         descriptor_list = []
         
         for image_path in self._image_paths:
-            image=cv2.imread(image_path)
+            image=cv2.imread(image_path, 0)
             _, descriptor= self._descriptor.compute(image)
             descriptor_list.append((image_path, descriptor))
         
@@ -107,7 +107,7 @@ class BoVW(ABC.Descriptor):
         
         return accuracy
           
-    def update(self, descriptor = Descriptor_CV2_SIFT(), code_book = np.ndarray(shape=0), \
+    def update(self, descriptor = DescriptorSift(), code_book = np.ndarray(shape=0), \
         number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
         self._descriptor = descriptor
         self._code_book = code_book
@@ -148,7 +148,7 @@ class BoVW(ABC.Descriptor):
     @property
     def example(self) -> None:
         image_path = choice(self._image_paths)
-        image = cv2.imread(image_path)
+        image = cv2.imread(image_path, 0)
         image = self._scale(image)
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints[::]:
