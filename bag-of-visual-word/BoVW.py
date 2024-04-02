@@ -153,13 +153,13 @@ class BoVW(ABC.Descriptor):
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints[::]:
             x, y = keypoint.pt
-            plt.imshow(cv2.circle(image, (int(x), int(y)), 2, (0, 255, 255)))
+            plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))
             
         plt.savefig("example")
         
     def _scale(self, image: cv2.typing.MatLike) -> cv2.typing.MatLike:
         image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        height, width, _ = image.shape
+        height, width = image.shape
         new_width = min(500, width // 2)
         new_height = int(new_width * (height / width))
         image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
@@ -169,7 +169,7 @@ class BoVW(ABC.Descriptor):
 if __name__ == "__main__":
     
     bovw = BoVW()
-    bovw.add_train_dataset("dataset/train")
+    bovw.add_train_dataset("dataset/test")
     bovw.example
     # print("start modeling")
     # bovw.model_training()
