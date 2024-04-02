@@ -1,28 +1,18 @@
 import cv2
 import numpy as np
 import os
-from sift.sift import DescriptorSift
+from sift.sift import *
 import matplotlib.pyplot as plt
-import ABS_classes.adstract_classes as ABC
 from random import choice
 from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 
-class Descriptor_CV2_SIFT(ABC.Descriptor):
-    def __init__(self) -> None:
-        super().__init__()
-        self._sift = cv2.SIFT_create()
-        
-    def compute(self, image: cv2.typing.MatLike) -> tuple:
-        kp = self._sift.detect(image, None)
-        keypoints, descriptors = self._sift.compute(image, kp)
-        return keypoints, descriptors
 
-class BoVW(ABC.Descriptor):
+class BoVW():
     def __init__(self) -> None:
-        self._descriptor = DescriptorSift()
+        self._descriptor = DescriptorSift
         self._image_paths = []
         self._dataset = []
         self._image_classes = []
@@ -49,6 +39,7 @@ class BoVW(ABC.Descriptor):
             
         for i in range(len(self._image_paths)):
             self._dataset.append((self._image_paths[i], self._image_classes[i]))
+            print(self._image_paths[i])
             
     def model_training(self) -> None:
         descriptor_list = []
@@ -84,7 +75,7 @@ class BoVW(ABC.Descriptor):
           
         descriptor_list_test = []
         for image_path in self._image_paths:
-            image = cv2.imread(image_path)
+            image = cv2.imread(image_path, 0)
             _, descriptor_test = self._descriptor.compute(image)
             descriptor_list_test.append((image_path, descriptor_test))
         test_features=np.zeros((len(self._image_paths), self._number_words),"float32")
@@ -107,7 +98,7 @@ class BoVW(ABC.Descriptor):
         
         return accuracy
           
-    def update(self, descriptor = DescriptorSift(), code_book = np.ndarray(shape=0), \
+    def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0), \
         number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
         self._descriptor = descriptor
         self._code_book = code_book
@@ -124,7 +115,7 @@ class BoVW(ABC.Descriptor):
         if not os.path.isfile(image_path):
             return ("no file", -1)
 
-        image = cv2.imread(image_path)
+        image = cv2.imread(image_path, 0)
         _, descriptor = self._descriptor.compute(image)
         
         test_features = np.zeros((1, self._number_words), "float32")
@@ -149,7 +140,6 @@ class BoVW(ABC.Descriptor):
     def example(self) -> None:
         image_path = choice(self._image_paths)
         image = cv2.imread(image_path, 0)
-        image = self._scale(image)
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints[::]:
             x, y = keypoint.pt
@@ -157,17 +147,7 @@ class BoVW(ABC.Descriptor):
             
         plt.savefig("example")
         
-    def _scale(self, image: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        height, width, _ = image.shape
-        new_width = min(500, width // 2)
-        new_height = int(new_width * (height / width))
-        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        return image
-        
-        
 if __name__ == "__main__":
-    
     bovw = BoVW()
     bovw.add_train_dataset("dataset/train")
     bovw.example
