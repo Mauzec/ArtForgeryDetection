@@ -141,9 +141,11 @@ class BoVW(ABC.Descriptor):
         
 if __name__ == "__main__":
     bovw = BoVW()
-    bovw.add_train_dataset("dataset/debug")
+    bovw.add_train_dataset("dataset/train")
+    print("start modeling")
     bovw.model_training()
-    print(bovw.testing("dataset/debug"))
-    path = "dataset/debug"
-    for i in range(1, 10):
-        print(bovw.classification_image(f"dataset/debug/dog/dog{i}.jpg"))
+    print("Result:")
+    name = f"dataset/test/artist/mona_younger.jpeg"
+    while True:
+        print(bovw.classification_image(name))
+        name = input()
