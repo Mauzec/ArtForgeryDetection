@@ -149,6 +149,7 @@ class BoVW(ABC.Descriptor):
     def example(self) -> None:
         image_path = choice(self._image_paths)
         image = cv2.imread(image_path)
+        image = self._scale(image)
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints[::]:
             x, y = keypoint.pt
@@ -156,7 +157,17 @@ class BoVW(ABC.Descriptor):
             
         plt.savefig("example")
         
+    def _scale(self, image: cv2.typing.MatLike) -> cv2.typing.MatLike:
+        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        height, width, _ = image.shape
+        new_width = min(500, width // 2)
+        new_height = int(new_width * (height / width))
+        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        return image
+        
+        
 if __name__ == "__main__":
+    
     bovw = BoVW()
     bovw.add_train_dataset("dataset/train")
     bovw.example
