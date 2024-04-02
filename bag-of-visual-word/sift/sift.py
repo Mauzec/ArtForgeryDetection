@@ -364,7 +364,7 @@ class DescriptorSift:
         ''' Calculate SIFT keypoints and descriptions for an input image '''
         print('[DEBUG] SIFT calculating started [calculate_keypoints_N_desctiptions]')
 
-        image = image.astype('float32')
+        image = array(image).astype('float32')
         base_image = DescriptorSift.generate_base_image(image, sigma, assumed_blur)
         octaves_count = DescriptorSift.calculate_octaves_count(base_image.shape)
         gauss_kernels = DescriptorSift.generate_gaussian_kernels(sigma, intervals_count)
