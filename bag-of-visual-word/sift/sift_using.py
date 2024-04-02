@@ -11,10 +11,9 @@ img1 = cv2.imread('box.png', 0)           # queryImage
 img2 = cv2.imread('box.png', 0)  # trainImage
 
 # Compute SIFT keypoints and descriptors
-kp1, des1 = sift.calculate_keypoints_N_desctiptions(img1)
-kp2, des2 = sift.calculate_keypoints_N_desctiptions(img2)
-print(kp1, des1)
-print(kp2, des2)
+kp1, des1 = sift.DescriptorSift.compute(img1)
+kp2, des2 = sift.DescriptorSift.compute(img1)
+
 # Initialize and use FLANN
 FLANN_INDEX_KDTREE = 0
 index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)

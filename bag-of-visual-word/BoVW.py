@@ -1,28 +1,18 @@
 import cv2
 import numpy as np
 import os
-import sift.sift as SIFT
+from sift.sift import *
 import matplotlib.pyplot as plt
-import ABS_classes.adstract_classes as ABC
 from random import choice
 from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 
-class Descriptor_CV2_SIFT(ABC.Descriptor):
-    def __init__(self) -> None:
-        super().__init__()
-        self._sift = cv2.SIFT_create()
-        
-    def compute(self, image: cv2.typing.MatLike) -> tuple:
-        kp = self._sift.detect(image, None)
-        keypoints, descriptors = self._sift.compute(image, kp)
-        return keypoints, descriptors
 
-class BoVW(ABC.Descriptor):
+class BoVW():
     def __init__(self) -> None:
-        self._descriptor = Descriptor_CV2_SIFT()
+        self._descriptor = DescriptorSift
         self._image_paths = []
         self._dataset = []
         self._image_classes = []
@@ -49,6 +39,7 @@ class BoVW(ABC.Descriptor):
             
         for i in range(len(self._image_paths)):
             self._dataset.append((self._image_paths[i], self._image_classes[i]))
+            print(self._image_paths[i])
             
     def model_training(self) -> None:
         descriptor_list = []
@@ -107,7 +98,7 @@ class BoVW(ABC.Descriptor):
         
         return accuracy
           
-    def update(self, descriptor = Descriptor_CV2_SIFT(), code_book = np.ndarray(shape=0), \
+    def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0), \
         number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
         self._descriptor = descriptor
         self._code_book = code_book
