@@ -24,7 +24,7 @@ class BoVW():
         self._number_words = 200
         self._stdslr = np.ndarray(shape=0)
         self._clf = LinearSVC(max_iter=80000)
-        self._class_names = []
+        self._class_names = ["artist", "other artist"]
         
     def add_train_dataset(self, path: str) -> None:
         
@@ -119,8 +119,8 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_descriptor), daemon=True)
-            for _ in range(NUM_PROCESS)
+                       args=(input_queue, output_queue, self._get_descriptor, i), daemon=True)
+            for i in range(NUM_PROCESS)
             ]
         
         for process in processes:
@@ -139,9 +139,9 @@ class BoVW():
             
         return descriptor_list
     
-    def _get_descriptor(self, image_path: str) -> tuple[str, np.ndarray]:
+    def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
         image = self._image(image_path)
-        _, descriptor= self._descriptor.compute(image)
+        _, descriptor= self._descriptor.compute(image, index_process=index_process)
         return (image_path, descriptor)
     
     
@@ -152,8 +152,8 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_image_feature), daemon=True)
-            for _ in range(NUM_PROCESS)
+                       args=(input_queue, output_queue, self._get_image_feature, i), daemon=True)
+            for i in range(NUM_PROCESS)
             ]
         
         for process in processes:
@@ -170,7 +170,7 @@ class BoVW():
                 
         return image_features
     
-    def _get_image_feature(self, data: dict) -> tuple[np.ndarray, int]:
+    def _get_image_feature(self, data: dict, index_process: int) -> tuple[np.ndarray, int]:
         descriptor = data["descriptor"]
         image_feature = np.zeros(self._number_words,"float32")
         words, _ = vq(descriptor, self._code_book)
@@ -214,12 +214,12 @@ class BoVW():
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
         print(image_path)
-        image = cv2.imread(image_path, 0)
-        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        height, width = image.shape
-        new_width = min(200, width // 2)
-        new_height = int(new_width * (height / width))
-        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        # image = cv2.imread(image_path, 0)
+        # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        # height, width = image.shape
+        # new_width = min(200, width // 2)
+        # new_height = int(new_width * (height / width))
+        # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
         return image_path
     
     def save_model(self, name_model = 'modelSVM.joblib', 
@@ -234,23 +234,24 @@ class BoVW():
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
         
-    def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue, function) -> None:
+    def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue,
+                         function, index_process: int) -> None:
         while True:
             if not input_queue.empty():
                 input_data = input_queue.get()
-                output_data = function(input_data)
+                output_data = function(input_data, index_process)
                 output_queue.put(output_data)
                 
     
 if __name__ == "__main__":
     bovw = BoVW()
-    start = time.time()
-    bovw.add_train_dataset("dataset/debug/train")
-    print("start training")
-    bovw.model_training()
-    end = time.time()
+    # start = time.time()
+    # bovw.add_train_dataset("dataset/train")
+    # print("start training")
+    # bovw.model_training()
+    # end = time.time()
     
-    bovw.save_model()
+    bovw.download_model()
     print("Result:")
-    print(bovw.testing("dataset/debug/test"))
-    print(end - start)
+    print(bovw.testing("dataset/test"))
+    # print(bovw.classification_image("dataset/test/artist/mona_younger.jpg"))
