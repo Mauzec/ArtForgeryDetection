@@ -5,7 +5,7 @@ import numpy
 class DescriptorSift:
     @staticmethod
     def compute(image_path: str, drawkps: int = 0):
-        ''' Search keypoints and descriptors. WARNING: this method must be run from bag-of-visual-word dir. 
+        ''' Search keypoints and descriptors. 
             Usage example:
                 from sift_cpp.compute import DescriptorSift
 
