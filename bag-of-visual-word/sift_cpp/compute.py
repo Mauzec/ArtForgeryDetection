@@ -13,7 +13,7 @@ class DescriptorSift:
                 #kps, des = DescriptorSift.compute('book.png', drawkps=1) for create result.jpg with keypoints marked
         '''
         assert drawkps == 0 or drawkps == 1
-        os.system(f'./sift_cpp/main {image_path} -drawkps={drawkps}')
+        os.system(f'./sift_cpp/main.exe {image_path} -drawkps={drawkps}')
 
         data = None
         with open('kps.json', 'r') as file: data = json.load(file)

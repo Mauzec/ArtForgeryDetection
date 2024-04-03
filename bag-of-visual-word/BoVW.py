@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import time
-from sift.sift import *
+from sift_cpp.compute import DescriptorSift
 from random import choice
 from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 8
+NUM_PROCESS = 4
 
 class BoVW():
     def __init__(self) -> None:
@@ -207,7 +207,7 @@ class BoVW():
         image = self._image(image_path)
         keypoints, _ = self._descriptor.compute(image)
         for keypoint in keypoints:
-            x, y = keypoint.pt
+            x, y = keypoint
             plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))
             
         plt.savefig("example")
@@ -220,7 +220,7 @@ class BoVW():
         new_width = min(200, width // 2)
         new_height = int(new_width * (height / width))
         image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        return image
+        return image_path
     
     def save_model(self, name_model = 'modelSVM.joblib', 
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
