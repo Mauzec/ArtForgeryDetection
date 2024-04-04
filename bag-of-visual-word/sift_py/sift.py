@@ -17,7 +17,6 @@ class DescriptorSift:
     def generate_base_image(image, sigma, assumed_blur):
         ''' Generating base image from input image. Goal is a upsampling its by 2 in both directions
             and blurring '''
-        print('[DEBUG] Generating base image [generate_base_image]')
         image = resize(image, (0, 0), fx=2, fy=2, interpolation=INTER_LINEAR)
         sigma_diff = sqrt(max((sigma ** 2) - ((2 * assumed_blur) ** 2), 0.01))
         return GaussianBlur(image, (0, 0), sigmaX=sigma_diff, sigmaY=sigma_diff)
@@ -25,13 +24,11 @@ class DescriptorSift:
     @staticmethod
     def calculate_octaves_count(image_shape):
         ''' Calculate a count of octaves in (image pyrimid) '''
-        print('[DEBUG] Calculating count of octaves [calculate_octaves_count]')
         return int(round(log(min(image_shape)) / log(2) - 1))
 
     @staticmethod
     def generate_gaussian_kernels(sigma, intervals_count):
         ''' Generating a list of gaussian kernels at which to blur the input sigma '''
-        print('[DEBUG] Generating gaussian kernels(scales) [generate_gaussian_kernels]')
         images_per_octave_count = intervals_count + 3
         k = 2 ** (1. / intervals_count)
         gauss_kernels = zeros(images_per_octave_count); gauss_kernels[0] = sigma
@@ -44,7 +41,6 @@ class DescriptorSift:
     @staticmethod
     def generate_gaussian_images(image, count_octaves, gauss_kernels):
         ''' Generating a scale-space pyramid of gaussian images '''
-        print('[DEBUG] Generating gaussian images [generate_gaussian_images]')
         gauss_images = []
 
         for octave_idx in range(count_octaves):
@@ -60,7 +56,6 @@ class DescriptorSift:
     @staticmethod
     def generate_DOG_images(gauss_images):
         ''' Generating a Difference-of-Gaussians(DOG) image pyramid '''
-        print('[DEBUG] Generating DOG images [generate_DOG_images]')
         dog_images = []
 
         for gauss_images_in_octave in gauss_images:
@@ -190,7 +185,6 @@ class DescriptorSift:
     @staticmethod
     def search_scale_space_extrema(gauss_images, dog_images, intervals_count, sigma, image_border_width, contrast_threshold=.04):
         ''' Search pixels coordinates of all scale-space extrema in the image pyramid '''
-        print('[DEBUG] Searching scale-space extrema [search_scale_space_extrema]')
         threshold = floor(.5 * contrast_threshold / intervals_count * 255)
         keypoints = []
 
@@ -270,7 +264,6 @@ class DescriptorSift:
     def generate_descriptors(keypoints, gaussian_images, window_width=4, num_bins=8, scale_multiplier=3, descriptor_max_value=0.2):
         """Generate descriptors for each keypoint
         """
-        print('Generating descriptors...')
         descriptors = []
 
         for keypoint in keypoints:
@@ -364,7 +357,6 @@ class DescriptorSift:
     @staticmethod
     def calculate_keypoints_N_desctiptions(image, sigma=1.6, intervals_count=3, assumed_blur=.5, image_border_width=5):
         ''' Calculate SIFT keypoints and descriptions for an input image '''
-        print('[DEBUG] SIFT calculating started [calculate_keypoints_N_desctiptions]')
 
         image = image.astype('float32')
         base_image = DescriptorSift.generate_base_image(image, sigma, assumed_blur)
