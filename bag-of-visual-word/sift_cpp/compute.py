@@ -1,6 +1,5 @@
 import os
 import json
-import numpy
 
 class DescriptorSift:
     @staticmethod
@@ -16,17 +15,16 @@ class DescriptorSift:
         os.system(f'.\sift_cpp\main.exe {image_path} -drawkps={drawkps} {index_process}')
 
         data = None
-        with open(f'kps{index_process}.json', 'r') as file: data = json.load(file)
+        with open(f"kps{index_process}.json", 'r') as file: data = json.load(file)
         kps = []
         des = []
         for item in data['kpsdes']:
             kps.append((item["x"], item["y"]))
             des.append(item['des'])
         return kps, des
-    
-if __name__ == "__main__":
-    DescriptorSift.compute("book.png")
 
+if __name__ == "__main__":
+    DescriptorSift.compute("book_in_scene.jpg")
 
         
 

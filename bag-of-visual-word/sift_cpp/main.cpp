@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     }
     bool return_kps_image = false;
     bool wrong = false;
-    if (argc == 3) {
+    if (argc >= 3) {
         size_t size = strlen(argv[2]);
         if (size != 10 || (argv[2][9] != '0' && argv[2][9] != '1')) {
             cout << "[ERROR]: Given wrong parameter " << argv[2] << endl;
@@ -65,24 +65,30 @@ int main(int argc, char *argv[]) {
             }
         }
         if (!wrong) {
+//            cout << argv[2][9] << endl;
             if (argv[2][9] == '0') return_kps_image = false;
             else return_kps_image = true;
         }
     }
     if (wrong) return 0;
     
+    bool add_to_name = false;
+    if (argc == 4) add_to_name = true;
+    
     Image img(argv[1]);
     img =  img.channels == 1 ? img : rgb_to_grayscale(img);
-    std::vector<sift::Keypoint> kps = sift::find_keypoints_and_descriptors(img);
+    std::vector<sift::Keypoint> kps = add_to_name ? sift::find_keypoints_and_descriptors(img, true, "kps" + string(argv[3]) + ".json") : sift::find_keypoints_and_descriptors(img);
     if (return_kps_image) {
         Image result = sift::draw_keypoints(img, kps);
-        result.save("result.jpg");
+        string result_path = "result.png";
+        if (add_to_name)
+            result_path = "result" + string(argv[3]) + ".jpg";
+        result.save(result_path);
+        std::cout << "Output image is saved as " << result_path  << endl;
     }
 //    for (auto& des : kps) cout << des.x << ' ' << des.y << endl;
     
     std::cout << "Found " << kps.size() << " keypoints" << endl;
-    if (return_kps_image)
-        std::cout << "Output image is saved as result.png" << endl;
     
     
     return 0;
