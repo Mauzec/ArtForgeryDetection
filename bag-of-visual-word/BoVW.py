@@ -253,5 +253,5 @@ if __name__ == "__main__":
     
     bovw.download_model()
     print("Result:")
-    print(bovw.testing("dataset/test"))
-    # print(bovw.classification_image("dataset/test/artist/mona_younger.jpg"))
+    # print(bovw.testing("dataset/test"))
+    print(bovw.classification_image("dataset/test/artist/mona_younger.jpg"))

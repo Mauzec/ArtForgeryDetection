@@ -1,10 +1,10 @@
 import os
 import shutil
 
-PATH = "C:\\home_screen\\programming\\algoritm and data structure\\images"
+PATH = "/Users/maus/Downloads/images"
 
 def get_images(start: int, end: int, for_using: str) -> None:
-    DESTINATION_PATH = f"C:\\home_screen\programming\\algoritm and data structure\ArtForgeryDetection\\bag-of-visual-word\dataset\\{for_using}\\other_artist"
+    DESTINATION_PATH = f"/Users/maus/Documents/GitHub/ArtForgeryDetection/bag-of-visual-word/dataset/{for_using}/other_artist"
     if not os.path.isdir(PATH):
             raise NameError("No such directory " + PATH)
         
