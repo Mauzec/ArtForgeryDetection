@@ -3,7 +3,7 @@ import json
 
 class DescriptorSift:
     @staticmethod
-    def compute(image_path: str, index_process: int = -1, drawkps: int = 0):
+    def compute(image_path: str, index_process = -1, drawkps: int = 0):
         ''' Search keypoints and descriptors. 
             Usage example:
                 from sift_cpp.compute import DescriptorSift
@@ -12,7 +12,7 @@ class DescriptorSift:
                 #kps, des = DescriptorSift.compute('book.png', drawkps=1) for create result.jpg with keypoints marked
         '''
         assert drawkps == 0 or drawkps == 1
-        os.system(f'.\sift_cpp\main.exe {image_path} -drawkps={drawkps} {index_process}')
+        os.system(f'./sift_cpp/main {image_path} -drawkps={drawkps} {index_process}')
 
         data = None
         with open(f"kps{index_process}.json", 'r') as file: data = json.load(file)
