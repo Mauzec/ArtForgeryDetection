@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 1
+NUM_PROCESS = 4
 
 class BoVW():
     def __init__(self) -> None:
@@ -120,7 +120,7 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_descriptor, i), daemon=True)
+                       args=(input_queue, output_queue, self._get_descriptor, i + 1), daemon=True)
             for i in range(NUM_PROCESS)
             ]
         
@@ -153,7 +153,7 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_image_feature, i), daemon=True)
+                       args=(input_queue, output_queue, self._get_image_feature, i + 1), daemon=True)
             for i in range(NUM_PROCESS)
             ]
         
@@ -250,7 +250,7 @@ class BoVW():
     
 if __name__ == "__main__":
     bovw = BoVW()
-    bovw.add_train_dataset("dataset/train")
+    bovw.add_train_dataset("dataset/debug/train")
     print("start training")
     start = time.time()
     bovw.model_training()
