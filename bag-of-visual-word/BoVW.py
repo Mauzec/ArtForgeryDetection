@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import time
+import json
 from sift_cpp.compute import DescriptorSift
 from random import choice
 from sklearn.metrics import accuracy_score
@@ -24,7 +25,7 @@ class BoVW():
         self._number_words = 200
         self._stdslr = np.ndarray(shape=0)
         self._clf = LinearSVC(max_iter=80000)
-        self._class_names = ["artist", "other artist"]
+        self._class_names = []
         
     def add_train_dataset(self, path: str) -> None:
         
@@ -119,7 +120,7 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_descriptor, i), daemon=True)
+                       args=(input_queue, output_queue, self._get_descriptor, i + 1), daemon=True)
             for i in range(NUM_PROCESS)
             ]
         
@@ -152,7 +153,7 @@ class BoVW():
         output_queue = mp.Queue()
         processes = [
             mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_image_feature, i), daemon=True)
+                       args=(input_queue, output_queue, self._get_image_feature, i + 1), daemon=True)
             for i in range(NUM_PROCESS)
             ]
         
@@ -222,17 +223,21 @@ class BoVW():
         # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
         return image_path
     
-    def save_model(self, name_model = 'modelSVM.joblib', 
+    def save_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
         dump(self._clf, name_model, compress=True)
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
+        with open(name_classes, "w") as json_file:
+            data = {"names": self._class_names}
+            json.dump(data, json_file, ensure_ascii=False)
         
-    def download_model(self, name_model = 'modelSVM.joblib',
+    def download_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
                        name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
         self._clf = load(name_model)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
+        with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)
         
     def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue,
                          function, index_process: int) -> None:
@@ -245,13 +250,12 @@ class BoVW():
     
 if __name__ == "__main__":
     bovw = BoVW()
-    # start = time.time()
-    # bovw.add_train_dataset("dataset/train")
-    # print("start training")
-    # bovw.model_training()
-    # end = time.time()
+    bovw.add_train_dataset("dataset/debug/train")
+    print("start training")
+    start = time.time()
+    bovw.model_training()
+    end = time.time()
     
-    bovw.download_model()
+    bovw.save_model()
     print("Result:")
-    # print(bovw.testing("dataset/test"))
     print(bovw.classification_image("dataset/test/artist/mona_younger.jpg"))
