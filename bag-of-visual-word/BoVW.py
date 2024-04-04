@@ -3,8 +3,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
-import time
 import json
+import dataset.get_pictures as get
 from sift_cpp.compute import DescriptorSift
 from random import choice
 from sklearn.metrics import accuracy_score
@@ -46,6 +46,7 @@ class BoVW():
             self._dataset.append((self._image_paths[i], self._image_classes[i]))
             
     def model_training(self) -> None:
+        print("get descriptor")
         descriptor_list = self._get_descriptor_list()
         
         descriptors = descriptor_list[0][1]
@@ -214,7 +215,6 @@ class BoVW():
         plt.savefig("example")
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        print(image_path)
         # image = cv2.imread(image_path, 0)
         # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
         # height, width = image.shape
@@ -237,7 +237,7 @@ class BoVW():
         self._clf = load(name_model)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
-        with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)
+        with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)["names"]
         
     def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue,
                          function, index_process: int) -> None:
@@ -250,12 +250,16 @@ class BoVW():
     
 if __name__ == "__main__":
     bovw = BoVW()
-    bovw.add_train_dataset("dataset/debug/train")
-    print("start training")
-    start = time.time()
-    bovw.model_training()
-    end = time.time()
-    
-    bovw.save_model()
-    print("Result:")
-    print(bovw.classification_image("dataset/test/artist/mona_younger.jpg"))
+    k_1 = 8
+    k_2 = 10
+    bovw.download_model()
+    print(bovw.classification_image("dataset/mona_younger/mona_younger.jpg"))
+    # get.get_images(k_1, k_2, "test") 
+    # print(bovw.testing("dataset/test"))
+    # print(f"начало обучения при k={k}")
+    # bovw.add_train_dataset("dataset/train")
+    # bovw.model_training()
+    # bovw.save_model()
+    # print(f"конец обучения при k={k}")
+    # bovw.clear_dataset()
+    # bovw.update()
