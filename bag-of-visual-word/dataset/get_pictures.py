@@ -1,10 +1,10 @@
 import os
 import shutil
 
-PATH = "/Users/maus/Downloads/images"
+PATH = "C:/home_screen\programming/algoritm and data structure/images"
 
 def get_images(start: int, end: int, for_using: str) -> None:
-    DESTINATION_PATH = f"/Users/maus/Documents/GitHub/ArtForgeryDetection/bag-of-visual-word/dataset/{for_using}/other_artist"
+    DESTINATION_PATH = f"C:/home_screen/programming/algoritm and data structure/ArtForgeryDetection/bag-of-visual-word\dataset/{for_using}/other_artist"
     if not os.path.isdir(PATH):
             raise NameError("No such directory " + PATH)
         
@@ -15,14 +15,13 @@ def get_images(start: int, end: int, for_using: str) -> None:
             for file in files[start:end]:
                 file_path = os.path.join(subdir, file)
                 
-                shutil.move(file_path, DESTINATION_PATH)
-                print(f'Перемещено: {file}')
+                shutil.copy(file_path, DESTINATION_PATH)
                 k += 1
                 
-    print(f"перемещено {k} картинок")
+    print(f"скопировано {k} картинок")
                 
 if __name__ == "__main__":
     start, end = tuple(map(int, input().split()))
-    for_using = input()
-    get_images(start, end, for_using)
+    # for_using = input()
+    get_images(start, end)
                 
