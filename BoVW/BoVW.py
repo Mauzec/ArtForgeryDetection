@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import multiprocessing as mp
 import json
-from sift_cpp.compute import DescriptorSift
+from BoVW.sift_cpp.compute import DescriptorSift
 from random import choice
 from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 4
+NUM_PROCESS = 16
 SCALE_IMAGE_PATH = "C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\bag-of-visual-word\dataset\\train\\other_artist_scale\\"
 
 class BoVW():
@@ -41,21 +41,15 @@ class BoVW():
             self._image_paths += class_path
             self._image_classes += [k] * (len(self._image_paths) - was_len)
             
-            
         for i in range(len(self._image_paths)):
             self._dataset.append((self._image_paths[i], self._image_classes[i]))
-            
+        
     def model_training(self) -> None:
-        print("get descriptor")
         descriptor_list = self._get_descriptor_list()
+        descriptors = descriptor_list[0]
         
-        descriptors = descriptor_list[0][1]
-        
-        for _, descriptor in descriptor_list[1:]:
+        for descriptor in descriptor_list[1:]:
             descriptors=np.vstack((descriptors,descriptor))
-            
-        print(type(descriptors))
-
         descriptors = descriptors.astype(float)
         self._code_book, _ = kmeans(descriptors, self._number_words, 1)
         
@@ -118,70 +112,27 @@ class BoVW():
         return (self._class_names[predicted_class], predicted_class)
     
     def _get_descriptor_list(self) -> list:
-        descriptor_list = []
-        input_queue = mp.Queue()
-        output_queue = mp.Queue()
-        processes = [
-            mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_descriptor, i + 1), daemon=True)
-            for i in range(NUM_PROCESS)
-            ]
-        
-        for process in processes:
-            process.start()
-        
-        for image_path in self._image_paths:
-            input_queue.put(image_path)
-        k = 0    
-        while k < len(self._image_paths):
-            if not output_queue.empty():
-                descriptor_list.append(output_queue.get())
-                k += 1
-            
-        for process in processes:
-            process.terminate()
-            
+        descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
         return descriptor_list
     
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
         image = self._image(image_path)
         _, descriptor= self._descriptor.compute(image, index_process=index_process)
-        return (image_path, descriptor)
+        return descriptor
     
     
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
         image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
-        
-        input_queue = mp.Queue()
-        output_queue = mp.Queue()
-        processes = [
-            mp.Process(target=self._daemon_function, 
-                       args=(input_queue, output_queue, self._get_image_feature, i + 1), daemon=True)
-            for i in range(NUM_PROCESS)
-            ]
-        
-        for process in processes:
-            process.start()
-        for i in range(len(self._image_paths)):
-            input_queue.put({ "descriptor": descriptor_list[i][1], "number": i})
-            
-        k = 0
-        while k < len(self._image_paths):
-            if not output_queue.empty():
-                image_feature, index = output_queue.get()
-                image_features[index] = image_feature
-                k += 1
-                
+        image_features = self._parallel_function(descriptor_list, self._get_image_feature)       
         return image_features
     
-    def _get_image_feature(self, data: dict, index_process: int) -> tuple[np.ndarray, int]:
-        descriptor = data["descriptor"]
+    def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
         image_feature = np.zeros(self._number_words,"float32")
         words, _ = vq(descriptor, self._code_book)
         for w in words:
             image_feature[w] += 1 
 
-        return image_feature, data["number"]
+        return image_feature
     
     @property
     def classes(self) -> dict:
@@ -242,13 +193,43 @@ class BoVW():
         self._code_book = np.load(name_code_book)
         with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)["names"]
         
+    def _parallel_function(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
+        new_data = [None] * len(data)
+        input_queue = mp.Queue()
+        output_queue = mp.Queue()
+        processes = [
+            mp.Process(target=self._daemon_function, 
+                       args=(input_queue, output_queue, function, i + 1), daemon=True)
+            for i in range(NUM_PROCESS)
+            ]
+        
+        for process in processes:
+            process.start()
+            
+        for key, element in enumerate(data):
+            input_queue.put((key, element))
+            
+        k = 0   
+        key = None
+        element = None
+        while k < len(data):
+            if not output_queue.empty():
+                key, element = output_queue.get()
+                new_data[key] = element
+                k += 1
+            
+        for process in processes:
+            process.terminate()
+            
+        return new_data
+    
     def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue,
                          function, index_process: int) -> None:
         while True:
             if not input_queue.empty():
-                input_data = input_queue.get()
+                key, input_data = input_queue.get()
                 output_data = function(input_data, index_process)
-                output_queue.put(output_data)
+                output_queue.put((key, output_data))
                 
     
 if __name__ == "__main__":
