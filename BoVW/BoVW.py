@@ -12,8 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 16
-SCALE_IMAGE_PATH = "C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\bag-of-visual-word\dataset\\train\\other_artist_scale\\"
+NUM_PROCESS = 4
 
 class BoVW():
     def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),

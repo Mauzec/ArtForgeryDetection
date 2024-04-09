@@ -5,16 +5,21 @@ import os
 class SVM:
     def fit(self, image_features: np.ndarray, name_classes: np.ndarray) -> None:
         first_class, second_class = self._split_class(image_features, name_classes)
-        self._write_class("first_class", first_class)
-        self._write_class("second_class", second_class)
+        self._write_class("dataclass0", first_class)
+        self._write_class("dataclass1", second_class)
         
-         # написать как вызывается C++
+        os.system("./BoVW/svm_cpp/svm_entry -train")
+        
+        
         
     def predict(self, image_features: np.ndarray) -> list:
         for image_feature in image_features:
-            os.system()
+            # --TO-DO написать новое записывалку с названием feature формата
+            # 5
+            # 1 2 3 4 5 
+            os.system("./BoVW/svm_cpp/svm_entry -predict")
+            # --TO-DO считать результат с predict.log (1 принадлежит dataclass0, -1 принадлежит dataclass1)
         
-        # написать как вызывается C++
     
     def _split_class(self, image_features: np.ndarray, name_classes: np.ndarray) -> tuple[list, list]:
         first_class = list()
@@ -30,7 +35,7 @@ class SVM:
         return first_class, second_class
     
     def _write_class(self, file_name: str, recorded_class: list) -> None:
-        with open(f"BoVW/svm_cpp/{file_name}.loc", "w") as writer:
+        with open(f"{file_name}", "w") as writer:
             writer.write(f"{len(recorded_class)} {len(recorded_class[0])}\n")
             for vector in recorded_class:
                 write_string = f"{vector[0]}"
