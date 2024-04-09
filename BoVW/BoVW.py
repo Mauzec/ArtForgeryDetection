@@ -16,15 +16,16 @@ NUM_PROCESS = 16
 SCALE_IMAGE_PATH = "C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\bag-of-visual-word\dataset\\train\\other_artist_scale\\"
 
 class BoVW():
-    def __init__(self) -> None:
-        self._descriptor = DescriptorSift
+    def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
+               number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
+        self._descriptor = descriptor
         self._image_paths = []
         self._dataset = []
         self._image_classes = []
-        self._code_book = np.ndarray(shape=0)
-        self._number_words = 200
+        self._code_book = code_book
+        self._number_words = number_words
         self._stdslr = np.ndarray(shape=0)
-        self._clf = LinearSVC(max_iter=80000)
+        self._clf = clf
         self._class_names = []
         
     def add_train_dataset(self, path: str) -> None:
@@ -46,11 +47,12 @@ class BoVW():
         
     def model_training(self) -> None:
         descriptor_list = self._get_descriptor_list()
-        descriptors = descriptor_list[0]
+        descriptors = descriptor_list[0][1]
         
-        for descriptor in descriptor_list[1:]:
-            descriptors=np.vstack((descriptors,descriptor))
+        for _, descriptor in descriptor_list[1:]:
+            descriptors = np.vstack((descriptors,descriptor))
         descriptors = descriptors.astype(float)
+        
         self._code_book, _ = kmeans(descriptors, self._number_words, 1)
         
         image_features = self._get_image_features(descriptor_list)
@@ -101,18 +103,20 @@ class BoVW():
         image = self._image(image_path)
         _, descriptor = self._descriptor.compute(image)
         
-        test_features = np.zeros((1, self._number_words), "float32")
+        features = np.zeros((1, self._number_words), "float32")
 
         words, _ = vq(descriptor, self._code_book)
         for w in words:
-            test_features[0][w] += 1
+            features[0][w] += 1
 
-        predicted_class = self._clf.predict(test_features)[0]
+        predicted_class = self._clf.predict(features)[0]
 
         return (self._class_names[predicted_class], predicted_class)
     
     def _get_descriptor_list(self) -> list:
         descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
+        for k, descriptor in enumerate(descriptor_list):
+            descriptor_list[k] = [self._image_classes[k], descriptor]
         return descriptor_list
     
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
@@ -123,7 +127,7 @@ class BoVW():
     
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
         image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
-        image_features = self._parallel_function(descriptor_list, self._get_image_feature)       
+        image_features = self._parallel_function([x[1] for x in descriptor_list], self._get_image_feature)       
         return image_features
     
     def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
@@ -230,7 +234,3 @@ class BoVW():
                 key, input_data = input_queue.get()
                 output_data = function(input_data, index_process)
                 output_queue.put((key, output_data))
-                
-    
-if __name__ == "__main__":
-    bovw = BoVW()
