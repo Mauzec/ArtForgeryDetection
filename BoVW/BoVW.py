@@ -11,6 +11,7 @@ from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
+import shutil
 
 NUM_PROCESS = 4
 
@@ -180,21 +181,30 @@ class BoVW():
         isWritten = cv2.imwrite(image_path, image)
         return image_path
     
-    def save_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
+    def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
-        dump(self._clf, name_model, compress=True)
+        
+        with open(f"{name_model}", "w") as writer:
+            with open(f"__svmcppcache.tmp", "r") as reader:
+                for line in reader:
+                    writer.write(line)     
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
         with open(name_classes, "w") as json_file:
             data = {"names": self._class_names}
             json.dump(data, json_file, ensure_ascii=False)
         
-    def download_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
+    def download_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
                        name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
-        self._clf = load(name_model)
+        
+        with open(f"__svmcppcache.tmp", "w") as writer:
+            with open(f"{name_model}", "r") as reader:
+                for line in reader:
+                    writer.write(line)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
-        with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)["names"]
+        with open(name_classes, 'r') as json_file: 
+            self._class_names = json.load(json_file)["names"]
         
     def _parallel_function(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
         new_data = [None] * len(data)
