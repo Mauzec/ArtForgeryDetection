@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 4
+NUM_PROCESS = 16
 
 class BoVW():
     def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
@@ -132,7 +132,6 @@ class BoVW():
         _, descriptor= self._descriptor.compute(image, index_process=index_process)
         return descriptor
     
-    
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
         image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
         image_features = self._parallel_function([x[1] for x in descriptor_list], self._get_image_feature)       
@@ -180,13 +179,13 @@ class BoVW():
         plt.savefig("example")
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        image = cv2.imread(image_path, 0)
-        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        height, width = image.shape
-        new_width = min(500, width)
-        new_height = int(new_width * (height / width))
-        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        isWritten = cv2.imwrite(image_path, image)
+        # image = cv2.imread(image_path, 0)
+        # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        # height, width = image.shape
+        # new_width = min(500, width)
+        # new_height = int(new_width * (height / width))
+        # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        # isWritten = cv2.imwrite(image_path, image)
         return image_path
     
     def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",

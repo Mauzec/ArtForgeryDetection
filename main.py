@@ -26,4 +26,5 @@ def main():
     Dataset_operations.clear()
     
 if __name__ == "__main__":
-    main()
+    # main()
+    Dataset_operations.clear()
