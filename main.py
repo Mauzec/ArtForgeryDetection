@@ -6,8 +6,8 @@ from BoVW.sift_cpp.compute import DescriptorSift
 def main():
     Dataset_operations.clear()
     Dataset_operations.get_mona()
-    Dataset_operations.get_images(0, 1, "train")
-    Dataset_operations.get_images(1, 2, "test")
+    Dataset_operations.get_images(0, 3, "train")
+    Dataset_operations.get_images(3, 6, "test")
     
     bovw = BoVW(descriptor=DescriptorSift, clf=SVM())
     bovw.add_train_dataset("BoVW/dataset/train")

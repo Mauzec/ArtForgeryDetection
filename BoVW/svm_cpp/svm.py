@@ -1,6 +1,9 @@
 import numpy as np
 import multiprocessing as mp
 import os
+from platform import platform as pf
+is_win = pf().startswith('Win')
+entry_path = os.getcwd() + ("\BoVW\svm_cpp\svm_entry.exe" if is_win else "/BoVW/svm_cpp/svm_entry")
 
 class SVM:
     def fit(self, image_features: np.ndarray, name_classes: np.ndarray) -> None:
@@ -8,7 +11,7 @@ class SVM:
         self._write_class("dataclass0", first_class)
         self._write_class("dataclass1", second_class)
         
-        os.system(".\BoVW\svm_cpp\svm_entry.exe -train")
+        os.system(f"{entry_path} -train")
         
         self._remove("dataclass0")
         self._remove("dataclass1")
@@ -19,7 +22,7 @@ class SVM:
         classification = []
         for image_feature in image_features:
             self._write_vector("feature", image_feature)
-            os.system(".\BoVW\svm_cpp\svm_entry.exe -predict")
+            os.system(f"{entry_path} -predict")
             classification.append(self._read_result("predict"))
             
         self._remove("feature")
