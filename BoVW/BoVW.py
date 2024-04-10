@@ -11,7 +11,6 @@ from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
-import shutil
 
 NUM_PROCESS = 4
 
@@ -71,17 +70,26 @@ class BoVW():
             
         test_features = self._get_image_features(descriptor_list_test)
 
-        true_classes=[]
+        true_classes = []
+        count_in_class = [0]*2
         for k in self._image_classes:
             true_classes.append(k)
+            count_in_class[k] += 1
             
         predict_classes=[]
         for k in self._clf.predict(test_features):
             predict_classes.append(k)
         
-        accuracy=accuracy_score(true_classes, predict_classes)
+        right_class = [0] * 2
+        for k in range(len(predict_classes)):
+            if predict_classes[k] == true_classes[k]:
+                right_class[true_classes[k]] += 1
+                
+        accuracy = sum(right_class) / len(true_classes)
+        accuracy_c1 = right_class[0] / count_in_class[0] if count_in_class[0] > 0 else 1.0
+        accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[0] > 0 else 1.0
         
-        return accuracy
+        return f"Общая вероятность вывода: {accuracy},\n Правильность определения первого класса: {accuracy_c1},\n правильность определения второго класса: {accuracy_c2}"
           
     def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
                number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
