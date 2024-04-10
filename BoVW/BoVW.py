@@ -179,13 +179,13 @@ class BoVW():
         plt.savefig("example")
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        # image = cv2.imread(image_path, 0)
-        # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        # height, width = image.shape
-        # new_width = min(500, width)
-        # new_height = int(new_width * (height / width))
-        # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        # isWritten = cv2.imwrite(image_path, image)
+        image = cv2.imread(image_path, 0)
+        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        height, width = image.shape
+        new_width = min(500, width)
+        new_height = int(new_width * (height / width))
+        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        isWritten = cv2.imwrite(image_path, image)
         return image_path
     
     def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",

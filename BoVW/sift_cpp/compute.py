@@ -2,7 +2,7 @@ import os
 import json
 from platform import platform as pf
 is_win = pf().startswith('Win')
-entry_path = os.getcwd() + ("\BoVW\sift_cpp\main.exe" if is_win else "/BoVW/sift_cpp/main")
+entry_path = f".\BoVW\\sift_cpp\\main.exe" if is_win else f"{os.getcwd()}/BoVW/sift_cpp/main"
 
 class DescriptorSift:
     @staticmethod
