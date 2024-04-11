@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 4
+NUM_PROCESS = 16
 
 class BoVW():
     def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
@@ -70,17 +70,26 @@ class BoVW():
             
         test_features = self._get_image_features(descriptor_list_test)
 
-        true_classes=[]
+        true_classes = []
+        count_in_class = [0]*2
         for k in self._image_classes:
             true_classes.append(k)
+            count_in_class[k] += 1
             
         predict_classes=[]
         for k in self._clf.predict(test_features):
             predict_classes.append(k)
         
-        accuracy=accuracy_score(true_classes, predict_classes)
+        right_class = [0] * 2
+        for k in range(len(predict_classes)):
+            if predict_classes[k] == true_classes[k]:
+                right_class[true_classes[k]] += 1
+                
+        accuracy = sum(right_class) / len(true_classes)
+        accuracy_c1 = right_class[0] / count_in_class[0] if count_in_class[0] > 0 else 1.0
+        accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[0] > 0 else 1.0
         
-        return accuracy
+        return f"Общая вероятность вывода: {accuracy},\n Правильность определения первого класса: {accuracy_c1},\n правильность определения второго класса: {accuracy_c2}"
           
     def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
                number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
@@ -122,7 +131,6 @@ class BoVW():
         image = self._image(image_path)
         _, descriptor= self._descriptor.compute(image, index_process=index_process)
         return descriptor
-    
     
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
         image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
@@ -180,21 +188,30 @@ class BoVW():
         isWritten = cv2.imwrite(image_path, image)
         return image_path
     
-    def save_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
+    def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
-        dump(self._clf, name_model, compress=True)
+        
+        with open(f"{name_model}", "w") as writer:
+            with open(f"__svmcppcache.tmp", "r") as reader:
+                for line in reader:
+                    writer.write(line)     
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
         with open(name_classes, "w") as json_file:
             data = {"names": self._class_names}
             json.dump(data, json_file, ensure_ascii=False)
         
-    def download_model(self, name_model = 'modelSVM.joblib', name_classes = "name_classes.json",
+    def download_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
                        name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
-        self._clf = load(name_model)
+        
+        with open(f"__svmcppcache.tmp", "w") as writer:
+            with open(f"{name_model}", "r") as reader:
+                for line in reader:
+                    writer.write(line)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
-        with open(name_classes, 'r') as json_file: self._class_names = json.load(json_file)["names"]
+        with open(name_classes, 'r') as json_file: 
+            self._class_names = json.load(json_file)["names"]
         
     def _parallel_function(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
         new_data = [None] * len(data)

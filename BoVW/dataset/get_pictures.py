@@ -1,12 +1,17 @@
 import os
 import shutil
+from platform import platform as pf
+is_win = pf().startswith('Win')
 
-PATH = "C:\\home_screen\\programming\\algoritm and data structure\\images"
+# it's hard code motherf**cker
+# itll must be changed
+PATH = "C:\\home_screen\\programming\\algoritm and data structure\\images" if is_win else "/Users/maus/Downloads/images"
+cwd = os.getcwd() + ("\\BoVW" if is_win else "/BoVW")
 
 class Dataset_operations:
     @staticmethod
     def get_images(start: int, end: int, for_using: str) -> None:
-        DESTINATION_PATH = f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\dataset\\{for_using}\\other_artist"
+        DESTINATION_PATH = f"{cwd}\\dataset\\{for_using}\\other_artist" if is_win else f"{cwd}/dataset/{for_using}/other_artist"
         for path in [PATH, DESTINATION_PATH]:
             if not os.path.isdir(path):
                     raise NameError("No such directory " + path)
@@ -25,21 +30,21 @@ class Dataset_operations:
         
     @staticmethod
     def get_mona() -> None:
-        shutil.copy(f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\mona\\mona_original.png",
-                    f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\dataset\\train\\artist"
+        shutil.copy(f"{cwd}\\mona\\mona_original.png" if is_win else f"{cwd}/mona/mona_original.png",
+                    f"{cwd}\\dataset\\train\\artist" if is_win else f"{cwd}/dataset/train/artist"
                     )
-        shutil.copy(f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\mona\\mona_younger_2.JPG",
-                    f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\dataset\\test\\artist"
+        shutil.copy(f"{cwd}\\mona\\/mona_younger_1.JPG" if is_win else f"{cwd}/mona/mona_younger_1.JPG",
+                    f"{cwd}\\dataset\\test\\artist" if is_win else f"{cwd}/dataset/test/artist"
                     )
-        shutil.copy(f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\mona\\mona_younger_1.JPG",
-                    f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\dataset\\test\\artist"
+        shutil.copy(f"{cwd}\\mona\\/mona_younger_2.JPG" if is_win else f"{cwd}/mona/mona_younger_2.JPG",
+                    f"{cwd}\\dataset\\test\\artist" if is_win else f"{cwd}/dataset/test/artist"
                     )
 
     @staticmethod
     def clear() -> None:   
         for role in ["train", "test"]:
             for artist in ["artist", "other_artist"]:
-                path = f"C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\BoVW\\dataset\\{role}\\{artist}"
+                path = f"{cwd}\\dataset\\{role}\\{artist}" if is_win else f"{cwd}/dataset/{role}/{artist}" 
                 shutil.rmtree(path)
                 os.mkdir(path)
                 

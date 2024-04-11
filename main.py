@@ -1,6 +1,7 @@
 from BoVW.BoVW import BoVW
 from BoVW.dataset.get_pictures import Dataset_operations
-from sklearn.svm import SVC, LinearSVC
+from BoVW.svm_cpp.svm import SVM
+from BoVW.sift_cpp.compute import DescriptorSift
 
 def main():
     Dataset_operations.clear()
@@ -8,7 +9,7 @@ def main():
     Dataset_operations.get_images(0, 1, "train")
     Dataset_operations.get_images(1, 2, "test")
     
-    bovw = BoVW(clf=SVC(max_iter=80000))
+    bovw = BoVW(descriptor=DescriptorSift, clf=SVM())
     bovw.add_train_dataset("BoVW/dataset/train")
     
     bovw.model_training()
@@ -26,3 +27,4 @@ def main():
     
 if __name__ == "__main__":
     main()
+    # Dataset_operations.clear()
