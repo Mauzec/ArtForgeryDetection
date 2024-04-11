@@ -6,13 +6,12 @@ import multiprocessing as mp
 import json
 from BoVW.sift_cpp.compute import DescriptorSift
 from random import choice
-from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import kmeans,vq
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from joblib import dump, load
 
-NUM_PROCESS = 16
+NUM_PROCESS = 8
 
 class BoVW():
     def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
@@ -47,7 +46,7 @@ class BoVW():
     def model_training(self) -> None:
         descriptor_list = self._get_descriptor_list()
         descriptors = descriptor_list[0][1]
-        
+
         for _, descriptor in descriptor_list[1:]:
             descriptors = np.vstack((descriptors,descriptor))
         descriptors = descriptors.astype(float)
@@ -69,6 +68,7 @@ class BoVW():
         descriptor_list_test = self._get_descriptor_list()
             
         test_features = self._get_image_features(descriptor_list_test)
+        test_features=self._stdslr.transform(test_features)
 
         true_classes = []
         count_in_class = [0]*2
@@ -87,9 +87,9 @@ class BoVW():
                 
         accuracy = sum(right_class) / len(true_classes)
         accuracy_c1 = right_class[0] / count_in_class[0] if count_in_class[0] > 0 else 1.0
-        accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[0] > 0 else 1.0
+        accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[1] > 0 else 1.0
         
-        return f"Общая вероятность вывода: {accuracy},\n Правильность определения первого класса: {accuracy_c1},\n правильность определения второго класса: {accuracy_c2}"
+        return f"Общая вероятность вывода: {accuracy},\nПравильность определения первого класса: {accuracy_c1},\nправильность определения второго класса: {accuracy_c2}"
           
     def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
                number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
@@ -123,7 +123,10 @@ class BoVW():
     
     def _get_descriptor_list(self) -> list:
         descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
+        delete_index = []
         for k, descriptor in enumerate(descriptor_list):
+            if len(descriptor) == 0:
+                delete_index.append(k)
             descriptor_list[k] = [self._image_classes[k], descriptor]
         return descriptor_list
     
@@ -179,13 +182,13 @@ class BoVW():
         plt.savefig("example")
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        image = cv2.imread(image_path, 0)
-        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        height, width = image.shape
-        new_width = min(500, width)
-        new_height = int(new_width * (height / width))
-        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        isWritten = cv2.imwrite(image_path, image)
+        # image = cv2.imread(image_path, 0)
+        # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        # height, width = image.shape
+        # new_width = min(500, width)
+        # new_height = int(new_width * (height / width))
+        # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        # isWritten = cv2.imwrite(image_path, image)
         return image_path
     
     def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
@@ -194,7 +197,8 @@ class BoVW():
         with open(f"{name_model}", "w") as writer:
             with open(f"__svmcppcache.tmp", "r") as reader:
                 for line in reader:
-                    writer.write(line)     
+                    writer.write(line)  
+        os.remove("__svmcppcache.tmp")   
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
         with open(name_classes, "w") as json_file:
