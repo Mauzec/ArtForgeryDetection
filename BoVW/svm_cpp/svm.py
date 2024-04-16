@@ -3,7 +3,7 @@ import multiprocessing as mp
 import os
 from platform import platform as pf
 is_win = pf().startswith('Win')
-entry_path = entry_path = f".\BoVW\\svm_cpp\\svm_entry.exe" if is_win else f"{os.getcwd()}/BoVW/sift_cpp/main"
+entry_path = f".\BoVW\\svm_cpp\\svm_entry.exe" if is_win else f"{os.getcwd()}/BoVW/sift_cpp/main"
 
 class SVM:
     def fit(self, image_features: np.ndarray, name_classes: np.ndarray) -> None:
