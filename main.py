@@ -5,41 +5,37 @@ from BoVW.sift_cpp.compute import DescriptorSift
 
 def main(percentage: int):
     Dataset_operations.clear()
-    Dataset_operations.get_mona_original()
-    Dataset_operations.get_mona_younger()
-    Dataset_operations.get_work_dataset(percentage_train=percentage)
+    # Dataset_operations.get_mona_original()
+    # Dataset_operations.get_work_train_dataset(percentage_train=percentage)
+    # Dataset_operations.get_images(start=50, end=70, for_using="test", similar=True)
     
-    bovw = BoVW(descriptor=DescriptorSift, clf=SVM(), number_words=1000)
+    bovw = BoVW(scale=True, descriptor=DescriptorSift, number_words=500)
     
-    print("start add dataset")
-    bovw.add_train_dataset("BoVW/dataset/train")
-    print("end add dataset")
+    # print("start add dataset")
+    # bovw.add_train_dataset("BoVW/dataset/train")
+    # print("end add dataset")
     
-    print("start training model")
-    bovw.model_training()
-    print("end training model")
+    # print("start training model")
+    # bovw.model_training()
+    # print("end training model")
     
-    print("save model")
-    bovw.save_model()
-    bovw.download_model()
-    # print("download model")
-    # bovw.download_model()
+    # print("save model")s
+    # bovw.save_model()
     
     # print("start testing")
     # print(bovw.testing("BoVW/dataset/test"))
     # print("end testing")
-    
-    print(f"percentage={percentage}")
+    bovw.download_model()
     Dataset_operations.get_mona_original()
-    # Dataset_operations.get_mona_younger()
+    Dataset_operations.get_mona_younger()
     
-    print(bovw.classification_image("BoVW/dataset/train/artist/mona_original.png"))
-    # print(bovw.classification_image("BoVW/dataset/test/artist/mona_younger_1.jpg"))
-    # print(bovw.classification_image("BoVW/dataset/test/artist/mona_younger_2.jpg"))
+    print("Оригинальная: ", bovw.classification_image("BoVW/dataset/train/artist/mona_original.png"))
+    print("Айзелуорсткая: ", bovw.classification_image("BoVW/dataset/test/artist/mona_younger_1.jpg"))
+    print("Эрмитажная: ", bovw.classification_image("BoVW/dataset/test/artist/mona_younger_2.jpg"))
     
-    # Dataset_operations.clear()
+    Dataset_operations.clear()
     
     print("end program")
     
 if __name__ == "__main__":
-    main(10)
+    main(30)

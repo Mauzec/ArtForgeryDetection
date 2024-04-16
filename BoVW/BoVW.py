@@ -15,7 +15,7 @@ NUM_PROCESS = 8
 
 class BoVW():
     def __init__(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
-               number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
+               number_words = 200, clf = LinearSVC(max_iter=80000), scale: bool=False) -> None:
         self._descriptor = descriptor
         self._image_paths = []
         self._dataset = []
@@ -25,6 +25,7 @@ class BoVW():
         self._stdslr = np.ndarray(shape=0)
         self._clf = clf
         self._class_names = []
+        self._scale = scale
         
     def add_train_dataset(self, path: str) -> None:
         
@@ -90,13 +91,6 @@ class BoVW():
         accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[1] > 0 else 1.0
         
         return f"Общая вероятность вывода: {accuracy},\nПравильность определения первого класса: {accuracy_c1},\nправильность определения второго класса: {accuracy_c2}"
-          
-    def update(self, descriptor = DescriptorSift, code_book = np.ndarray(shape=0),
-               number_words = 200, clf = LinearSVC(max_iter=80000)) -> None:
-        self._descriptor = descriptor
-        self._code_book = code_book
-        self._number_words = number_words
-        self._clf = clf
         
     def clear_dataset(self) -> None:
         self._image_paths = []
@@ -182,36 +176,39 @@ class BoVW():
         plt.savefig("example")
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        # image = cv2.imread(image_path, 0)
-        # image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-        # height, width = image.shape
-        # new_width = min(500, width)
-        # new_height = int(new_width * (height / width))
-        # image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-        # isWritten = cv2.imwrite(image_path, image)
+        if self._scale:
+            image = cv2.imread(image_path, 0)
+            image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+            height, width = image.shape
+            new_width = min(500, width)
+            new_height = int(new_width * (height / width))
+            image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            isWritten = cv2.imwrite(image_path, image)
         return image_path
     
-    def save_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
+    def save_model(self, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
         
-        with open(f"{name_model}", "w") as writer:
-            with open(f"__svmcppcache.tmp", "r") as reader:
-                for line in reader:
-                    writer.write(line)  
-        os.remove("__svmcppcache.tmp")   
+        # with open(f"{name_model}", "w") as writer:
+        #     with open(f"__svmcppcache.tmp", "r") as reader:
+        #         for line in reader:
+        #             writer.write(line)  
+        # os.remove("__svmcppcache.tmp")   
+        dump(self._clf, name_model, compress=True)
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
         with open(name_classes, "w") as json_file:
             data = {"names": self._class_names}
             json.dump(data, json_file, ensure_ascii=False)
         
-    def download_model(self, name_model = 'modelSVM.tmp', name_classes = "name_classes.json",
+    def download_model(self, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
                        name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
         
-        with open(f"__svmcppcache.tmp", "w") as writer:
-            with open(f"{name_model}", "r") as reader:
-                for line in reader:
-                    writer.write(line)
+        # with open(f"__svmcppcache.tmp", "w") as writer:
+        #     with open(f"{name_model}", "r") as reader:
+        #         for line in reader:
+        #             writer.write(line)
+        self._clf = load(name_model)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
         with open(name_classes, 'r') as json_file: 

@@ -75,6 +75,26 @@ class Dataset_operations:
 
         print(f"скопировано {k_train} картинок в train\nскопировано {k_test} картинок в test")  
         
+    @staticmethod
+    def get_work_train_dataset(percentage_train: int=50) -> None:
+        if not os.path.isdir(PATH):
+            raise NameError("No such directory " + PATH)
+        
+        names_folder = [
+            "Raphael",
+            "Michelangelo",
+            "Titian",
+            "Sandro_Botticelli",
+            "Jan_van_Eyck"
+        ]
+        k_train = 0
+        for folder in names_folder:
+            files = [file for root, dirs, files in os.walk(os.path.join(PATH, folder)) for file in files]
+            end_for_train = round(len(files) * percentage_train / 100)
+            k_train += Dataset_operations.get_pictures_folder(start=0, end=end_for_train, folder=folder, for_using="train")
+            
+        print(f"скопировано {k_train} картинок в train")
+            
     
     @staticmethod
     def get_pictures_folder(start: int=0, end: int=0, all: bool=False, folder: str = "", for_using: str="") -> int:
@@ -102,5 +122,6 @@ class Dataset_operations:
                 path = f"{cwd}\\dataset\\{role}\\{artist}" if is_win else f"{cwd}/dataset/{role}/{artist}" 
                 shutil.rmtree(path)
                 os.mkdir(path)
+    
                 
                 
