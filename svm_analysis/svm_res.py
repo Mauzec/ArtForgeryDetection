@@ -7,6 +7,10 @@ import numpy as np
 import cv2
 import os
 
+# Указываем пути к директориям с изображениями
+leonardo_images_folder = "/Leonardo"
+other_images_folder = "/Other"
+
 # Процедура инициализации модели ResNet50
 def model_setup():
     resnet_model = ResNet50(weights='imagenet', include_top=False)
@@ -109,16 +113,16 @@ def verification_test(test_image_path, reference_set_folder, svm_model, threshol
 resnet_model = model_setup()
 
 # Организация изображений
-class0_features = image_organisation("Class0_folder", "Class1_folder")
+leonardo_features = image_organisation(leonardo_images_folder, other_images_folder)
 
 # Обучение SVM
-svm_model = svm_training(class0_features, np.zeros(class0_features.shape[0]))
+svm_model = svm_training(leonardo_features, np.zeros(leonardo_features.shape[0]))
 
 # Тестирование модели
 test_predictions = model_testing(resnet_model, svm_model, "Test_folder")
 
 # Тренировка окончательной модели
-final_svm_model = train_final(svm_model, class0_features, np.zeros(class0_features.shape[0]))
+final_svm_model = train_final(svm_model, leonardo_features, np.zeros(leonardo_features.shape[0]))
 
 # Проверка изображения
 result = verification_test("Test_image_path", "Reference_set_folder", final_svm_model, threshold_delta=100, threshold_gamma=0.7)
