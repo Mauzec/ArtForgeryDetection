@@ -1,4 +1,4 @@
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from keras.applications import ResNet50
@@ -8,8 +8,10 @@ import cv2
 import os
 
 # Указываем пути к директориям с изображениями
-leonardo_images_folder = "/Leonardo"
-other_images_folder = "/Other"
+leonardo_images_folder = "path/to/Leonardo"
+other_images_folder = "path/to/Other"
+test_folder = "path/to/test_folder"
+reference_folder = "path/to/reference_folder"
 
 # Процедура инициализации модели ResNet50
 def model_setup():
@@ -34,21 +36,35 @@ def image_organisation(class0_folder, class1_folder):
     features = resnet_model.predict(X)
     return features
 
-# Процедура обучения SVM
-def svm_training(features, labels):
+# Процедура обучения SVM с настройкой гиперпараметров
+def svm_training_with_hyperparameter_tuning(features, labels):
     # Разделяем данные на обучающий и тестовый наборы
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
 
-    # Обучаем SVM
-    svm_classifier = SVC(kernel='linear')
-    svm_classifier.fit(X_train, y_train)
+    # Определяем набор гиперпараметров для поиска по сетке
+    param_grid = {'C': [0.1, 1, 10, 100], 'gamma': [1, 0.1, 0.01, 0.001], 'kernel': ['linear', 'rbf', 'poly']}
+
+    # Создаем экземпляр модели SVM
+    svm_classifier = SVC()
+
+    # Инициализируем GridSearchCV с моделью SVM и параметрами для поиска по сетке
+    grid_search = GridSearchCV(svm_classifier, param_grid, refit=True, verbose=3, cv=5)
+
+    # Запускаем поиск по сетке на обучающих данных
+    grid_search.fit(X_train, y_train)
+
+    # Выводим лучшие гиперпараметры, найденные поиском по сетке
+    print("Best Parameters:", grid_search.best_params_)
+
+    # Получаем лучшую модель SVM
+    svm_model = grid_search.best_estimator_
 
     # Тестируем SVM
-    y_pred = svm_classifier.predict(X_test)
+    y_pred = svm_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print("Accuracy:", accuracy)
 
-    return svm_classifier
+    return svm_model
 
 # Процедура тестирования модели
 def model_testing(resnet_model, svm_model, test_folder):
@@ -115,15 +131,15 @@ resnet_model = model_setup()
 # Организация изображений
 leonardo_features = image_organisation(leonardo_images_folder, other_images_folder)
 
-# Обучение SVM
-svm_model = svm_training(leonardo_features, np.zeros(leonardo_features.shape[0]))
+# Обучение SVM с настройкой гиперпараметров
+svm_model = svm_training_with_hyperparameter_tuning(leonardo_features, np.zeros(leonardo_features.shape[0]))
 
 # Тестирование модели
-test_predictions = model_testing(resnet_model, svm_model, "Test_folder")
+test_predictions = model_testing(resnet_model, svm_model, test_folder)
 
 # Тренировка окончательной модели
 final_svm_model = train_final(svm_model, leonardo_features, np.zeros(leonardo_features.shape[0]))
 
 # Проверка изображения
-result = verification_test("Test_image_path", "Reference_set_folder", final_svm_model, threshold_delta=100, threshold_gamma=0.7)
+result = verification_test("Test_image_path", reference_folder, final_svm_model, threshold_delta=100, threshold_gamma=0.7)
 print(result)
