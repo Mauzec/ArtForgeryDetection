@@ -5,26 +5,27 @@ from BoVW.sift_cpp.compute import DescriptorSift
 
 def main(percentage: int):
     Dataset_operations.clear()
-    # Dataset_operations.get_mona_original()
-    # Dataset_operations.get_work_train_dataset(percentage_train=percentage)
-    # Dataset_operations.get_images(start=50, end=70, for_using="test", similar=True)
+    Dataset_operations.get_mona_original()
+    Dataset_operations.get_work_train_dataset(percentage_train=percentage)
+    Dataset_operations.get_images(start=50, end=70, for_using="test", similar=True)
     
     bovw = BoVW(scale=True, descriptor=DescriptorSift, number_words=500)
     
-    # print("start add dataset")
-    # bovw.add_train_dataset("BoVW/dataset/train")
-    # print("end add dataset")
+    print("start add dataset")
+    bovw.add_train_dataset("BoVW/dataset/train")
+    print("end add dataset")
     
-    # print("start training model")
-    # bovw.model_training()
-    # print("end training model")
+    print("start training model")
+    bovw.model_training()
+    print("end training model")
     
-    # print("save model")s
-    # bovw.save_model()
+    print("save model")
+    bovw.save_model()
     
-    # print("start testing")
-    # print(bovw.testing("BoVW/dataset/test"))
-    # print("end testing")
+    print("start testing")
+    print(bovw.testing("BoVW/dataset/test"))
+    print("end testing")
+    
     bovw.download_model()
     Dataset_operations.get_mona_original()
     Dataset_operations.get_mona_younger()
