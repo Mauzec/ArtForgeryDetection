@@ -8,8 +8,8 @@ import cv2
 import os
 
 # Указываем пути к директориям с изображениями
-leonardo_images_folder = "path/to/Leonardo"
-other_images_folder = "path/to/Other"
+leonardo_images_folder = "/Leonardo"
+other_images_folder = "/Other"
 test_folder = "path/to/test_folder"
 reference_folder = "path/to/reference_folder"
 
@@ -115,10 +115,10 @@ def verification_test(test_image_path, reference_set_folder, svm_model, threshol
     for ref_edge_features in reference_edge_features:
         similarity = np.sum(np.abs(test_edge_features - ref_edge_features))
         if similarity < threshold_delta:
-            # Предсказываем класс тестового изображения с помощью SVM модели
+            
             test_feature = resnet_model.predict(np.expand_dims(cv2.imread(test_image_path), axis=0))
             test_prediction = svm_model.predict(test_feature)
-            # Если вероятность класса 0 выше порогового значения, считаем картину вероятно созданной Да Винчи
+            
             if test_prediction == 0 and svm_model.predict_proba(test_feature)[0][0] > threshold_gamma:
                 return "Painting is likely to be by DaVinci"
             else:
