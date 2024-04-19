@@ -19,7 +19,7 @@ def extract_brushstrokes(image):
 
 def ssim(img1, img2):
     C1 = (0.01 * 255)**2
-    C2 = (0.03 * 255)**2
+    C2 = (0.03 * 255)**2 
 
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)

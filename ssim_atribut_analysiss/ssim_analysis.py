@@ -3,7 +3,7 @@ import dlib
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
 from imutils import face_utils
-
+ 
 # Инициализация детектора лица и предсказателя лицевых признаков
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
