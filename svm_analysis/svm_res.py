@@ -118,7 +118,7 @@ def verification_test(test_image_path, reference_set_folder, svm_model, threshol
             
             test_feature = resnet_model.predict(np.expand_dims(cv2.imread(test_image_path), axis=0))
             test_prediction = svm_model.predict(test_feature)
-            
+            print(test_feature)
             if test_prediction == 0 and svm_model.predict_proba(test_feature)[0][0] > threshold_gamma:
                 return "Painting is likely to be by DaVinci"
             else:

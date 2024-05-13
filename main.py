@@ -1,42 +1,48 @@
 from BoVW.BoVW import BoVW
 from BoVW.dataset.get_pictures import Dataset_operations
-from BoVW.svm_cpp.svm import SVM
+from ResnetDescriptor.Resnet import ResnetDescruptor as Resnet
 from BoVW.sift_cpp.compute import DescriptorSift
+import matplotlib.pyplot as plt
+import numpy as np
 
-def main(percentage: int):
+def main(percentage: int, descriptor) -> int:
     Dataset_operations.clear()
     Dataset_operations.get_mona_original()
     Dataset_operations.get_work_train_dataset(percentage_train=percentage)
-    Dataset_operations.get_images(start=50, end=70, for_using="test", similar=True)
+    bovw = BoVW(scale=True, descriptor=descriptor, number_words=500)
     
-    bovw = BoVW(scale=True, descriptor=DescriptorSift, number_words=500)
-    
-    print("start add dataset")
     bovw.add_train_dataset("BoVW/dataset/train")
-    print("end add dataset")
     
-    print("start training model")
     bovw.model_training()
-    print("end training model")
-    
-    print("save model")
     bovw.save_model()
     
-    print("start testing")
-    print(bovw.testing("BoVW/dataset/test"))
-    print("end testing")
-    
-    bovw.download_model()
     Dataset_operations.get_mona_original()
     Dataset_operations.get_mona_younger()
     
-    print("Оригинальная: ", bovw.classification_image("BoVW/dataset/train/artist/mona_original.png"))
-    print("Айзелуорсткая: ", bovw.classification_image("BoVW/dataset/test/artist/mona_younger_1.jpg"))
-    print("Эрмитажная: ", bovw.classification_image("BoVW/dataset/test/artist/mona_younger_2.jpg"))
-    
-    Dataset_operations.clear()
-    
-    print("end program")
+    result = np.array([
+        bovw.classification_image("BoVW/dataset/train/artist/mona_original.png"),
+        bovw.classification_image("BoVW/dataset/test/artist/mona_younger_1.jpg"),
+        bovw.classification_image("BoVW/dataset/test/artist/mona_younger_2.jpg")
+    ])
+    print(result)
+    # right_answer = np.array([0, 0, 1])
+    # return np.count_nonzero(result == right_answer)
     
 if __name__ == "__main__":
-    main(30)
+    # Данные для столбцов
+    labels = ["Resnet", "SIFT"]
+    values = [2.6, 2.4]
+
+    # Цвета для столбцов
+    colors = ['blue', 'orange']
+
+    # Создание столбцов
+    plt.bar(labels, values, color=colors)
+
+    # Показать числа на столбцах
+    for i, v in enumerate(values):
+        plt.text(i, v, str(v), ha='center', va='bottom')
+
+    # Показать график
+    plt.savefig("result.png")
+        

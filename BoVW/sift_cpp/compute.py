@@ -6,7 +6,7 @@ entry_path = f".\BoVW\\sift_cpp\\main.exe" if is_win else f"{os.getcwd()}/BoVW/s
 
 class DescriptorSift:
     @staticmethod
-    def compute(image_path: str, index_process = -1, drawkps: int = 0):
+    def compute(image_path: str, index_process = -1, drawkps: int = 0) -> tuple[list, list]:
         ''' Search keypoints and descriptors. 
             Usage example:
                 from sift_cpp.compute import DescriptorSift

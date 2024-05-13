@@ -117,10 +117,7 @@ class BoVW():
     
     def _get_descriptor_list(self) -> list:
         descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
-        delete_index = []
         for k, descriptor in enumerate(descriptor_list):
-            if len(descriptor) == 0:
-                delete_index.append(k)
             descriptor_list[k] = [self._image_classes[k], descriptor]
         return descriptor_list
     
