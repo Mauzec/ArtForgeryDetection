@@ -117,10 +117,7 @@ class BoVW():
     
     def _get_descriptor_list(self) -> list:
         descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
-        delete_index = []
         for k, descriptor in enumerate(descriptor_list):
-            if len(descriptor) == 0:
-                delete_index.append(k)
             descriptor_list[k] = [self._image_classes[k], descriptor]
         return descriptor_list
     
@@ -188,12 +185,7 @@ class BoVW():
     
     def save_model(self, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
                    name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
-        
-        # with open(f"{name_model}", "w") as writer:
-        #     with open(f"__svmcppcache.tmp", "r") as reader:
-        #         for line in reader:
-        #             writer.write(line)  
-        # os.remove("__svmcppcache.tmp")   
+         
         dump(self._clf, name_model, compress=True)
         dump(self._stdslr, name_scaler, compress=True)
         np.save(name_code_book, self._code_book)
@@ -204,10 +196,6 @@ class BoVW():
     def download_model(self, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
                        name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
         
-        # with open(f"__svmcppcache.tmp", "w") as writer:
-        #     with open(f"{name_model}", "r") as reader:
-        #         for line in reader:
-        #             writer.write(line)
         self._clf = load(name_model)
         self._stdslr = load(name_scaler)
         self._code_book = np.load(name_code_book)
