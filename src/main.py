@@ -32,6 +32,7 @@ def main(percentage: int, descriptor) -> int:
         bovw.classification_image("dataset/test/artist/mona_younger_4.jpg"),
     ])
     print(result)
+    Dataset_operations.clear()
     
 if __name__ == "__main__":
     main(percentage=5, descriptor=SIFT(cfg['Victor']['SIFT']))
