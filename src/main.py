@@ -27,7 +27,9 @@ def main(percentage: int, descriptor) -> int:
     result = np.array([
         bovw.classification_image("dataset/train/artist/mona_original.png"),
         bovw.classification_image("dataset/test/artist/mona_younger_1.jpg"),
-        bovw.classification_image("dataset/test/artist/mona_younger_2.jpg")
+        bovw.classification_image("dataset/test/artist/mona_younger_2.jpg"),
+        bovw.classification_image("dataset/test/artist/mona_younger_3.jpg"),
+        bovw.classification_image("dataset/test/artist/mona_younger_4.jpg"),
     ])
     print(result)
     
