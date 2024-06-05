@@ -1,12 +1,13 @@
 import os
 import shutil
+import cv2
 from platform import platform as pf
 is_win = pf().startswith('Win')
 
 PATH = "C:\\home_screen\\programming\\algoritm and data structure\\Dataset" if is_win else "/Users/maus/Downloads/images"
 cwd = os.getcwd()
 
-class Dataset_operations:
+class DatasetOperations:
     @staticmethod
     def get_images(PATH: str=PATH,
                    start: int=0,
@@ -33,9 +34,9 @@ class Dataset_operations:
         k = 0
         for folder in names_folder:
             if all:
-                k += Dataset_operations.get_pictures_folder(PATH, all=True, folder=folder, for_using=for_using)
+                k += DatasetOperations.get_pictures_folder(PATH, all=True, folder=folder, for_using=for_using)
             else:
-                k += Dataset_operations.get_pictures_folder(PATH, start=start, end=end, folder=folder, for_using=for_using)
+                k += DatasetOperations.get_pictures_folder(PATH, start=start, end=end, folder=folder, for_using=for_using)
 
         print(f"скопировано {k} картинок в {for_using}")
         
@@ -65,6 +66,22 @@ class Dataset_operations:
                 shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\{mona_name}" if is_win else f"{PATH}/Mona/{resolution}_resolution/{mona_name}",
                             f"{cwd}\\dataset\\test\\artist" if is_win else f"{cwd}/dataset/test/artist"
                             )
+                
+    
+    @staticmethod
+    def get_mona_test(PATH: str=PATH,
+                          resolution: str = "low") -> None:
+        
+        shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\mona_original.png" if is_win else f"{PATH}/Mona/{resolution}_resolution/mona_original.png",
+            f"{cwd}\\dataset\\test\\artist" if is_win else f"{cwd}/dataset/test/artist"
+            )
+        
+        for mona_name in os.listdir(f"{PATH}\\Mona\\{resolution}_resolution" if is_win else f"{PATH}/Mona/{resolution}_resolution"):
+            if "younger" in mona_name:
+                shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\{mona_name}" if is_win else f"{PATH}/Mona/{resolution}_resolution/{mona_name}",
+                            f"{cwd}\\dataset\\test\\other_artist" if is_win else f"{cwd}/dataset/test/other_artist"
+                            )
+        
         
         
     @staticmethod
@@ -86,9 +103,9 @@ class Dataset_operations:
             files = [file for root, dirs, files in os.walk(os.path.join(PATH, folder)) for file in files]
             for_using = "train"
             end_for_train = round(len(files) * percentage_train / 100)
-            k_train += Dataset_operations.get_pictures_folder(PATH, start=0, end=end_for_train, folder=folder, for_using=for_using)
+            k_train += DatasetOperations.get_pictures_folder(PATH, start=0, end=end_for_train, folder=folder, for_using=for_using)
             for_using = "test"
-            k_test += Dataset_operations.get_pictures_folder(PATH, start=end_for_train, end=len(files), 
+            k_test += DatasetOperations.get_pictures_folder(PATH, start=end_for_train, end=len(files), 
                                                         folder=folder, for_using=for_using)
 
         print(f"скопировано {k_train} картинок в train\nскопировано {k_test} картинок в test")  
@@ -111,7 +128,7 @@ class Dataset_operations:
         for folder in names_folder:
             files = [file for root, dirs, files in os.walk(os.path.join(f"{PATH}\\Images" if is_win else f"{PATH}/Images", folder)) for file in files]
             end_for_train = round(len(files) * percentage_train / 100)
-            k_train += Dataset_operations.get_pictures_folder(PATH, start=0, end=end_for_train, folder=folder, for_using="train")
+            k_train += DatasetOperations.get_pictures_folder(PATH, start=0, end=end_for_train, folder=folder, for_using="train")
             
         print(f"скопировано {k_train} картинок в train")
             
@@ -149,6 +166,24 @@ class Dataset_operations:
                 path = f"{cwd}\\dataset\\{role}\\{artist}" if is_win else f"{cwd}/dataset/{role}/{artist}" 
                 shutil.rmtree(path)
                 os.mkdir(path)
+                
+    @staticmethod
+    def scale_all():
+        for for_using in ['train', 'test']:
+            for type_artist in ['artist', 'other_artist']:
+                for image in os.listdir(f"{cwd}\\dataset\\{for_using}\\{type_artist}"):
+                    DatasetOperations.scale_image(f"{cwd}\\dataset\\{for_using}\\{type_artist}\\{image}")
+    
+    @staticmethod
+    def scale_image(image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
+        image = cv2.imread(image_path, 0)
+        image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
+        height, width = image.shape
+        new_width = min(500, width)
+        new_height = int(new_width * (height / width))
+        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        isWritten = cv2.imwrite(image_path, image)
+        return image_path
                 
     
     

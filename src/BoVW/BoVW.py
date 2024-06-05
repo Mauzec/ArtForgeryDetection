@@ -30,7 +30,7 @@ class BoVW():
         self._number_words = number_words
         self._stdslr = np.ndarray(shape=0)
         self._clf = clf
-        self._cluster = cluster(n_clusters=number_words)
+        self._cluster = cluster
         self._class_names = []
         self._scale = scale
         
@@ -76,7 +76,7 @@ class BoVW():
         descriptor_list_test = self._get_descriptor_list()
             
         test_features = self._get_image_features(descriptor_list_test)
-        test_features=self._stdslr.transform(test_features)
+        test_features = self._stdslr.transform(test_features)
 
         true_classes = []
         count_in_class = [0]*2
@@ -105,22 +105,18 @@ class BoVW():
         self._image_classes = []
         self._image_classes_name = []
         
-    def classification_image(self, image_path: str) -> tuple[str, int]:
+    def classification_image(self, image_path: str) -> str:
         if not os.path.isfile(image_path):
             return ("no file", -1)
-
-        image = self._image(image_path)
-        _, descriptor = self._descriptor.compute(image)
         
-        features = np.zeros((1, self._number_words), "float32")
+        descriptor = self._get_descriptor(image_path, -1)
+        feature = np.array([self._get_image_feature(descriptor, -1)])
+        feature = self._stdslr.transform(feature)
+        
+        predicted_class = self._clf.predict(feature)[0]
+        
 
-        words = self._cluster.predict(descriptor)
-        for w in words:
-            features[0][w] += 1
-
-        predicted_class = self._clf.predict(features)[0]
-
-        return (self._class_names[predicted_class], predicted_class)
+        return self._class_names[predicted_class]
     
     def _get_descriptor_list(self) -> list:
         descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
@@ -130,7 +126,7 @@ class BoVW():
     
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
         image = self._image(image_path)
-        _, descriptor= self._descriptor.compute(image, index_process=index_process)
+        _, descriptor = self._descriptor.compute(image, index_process=index_process)
         return descriptor
     
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
