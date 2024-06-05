@@ -1,11 +1,9 @@
 from BoVW.BoVW import BoVW
 from dataset.get_pictures import DatasetOperations
 from CustomDescriptors.SiftDescriptor.SIFT import SIFT
+from CustomDescriptors.ResnetDescriptor.Resnet import Resnet
 from sklearn.cluster import KMeans
 from sklearn.svm import LinearSVC
-from numpy.typing import NDArray
-import numpy as np
-
 
 import yaml
 with open('config.yaml', 'r') as config:
@@ -52,7 +50,7 @@ def test(bovw: BoVW) -> tuple[list[str], str]:
 if __name__ == "__main__":
     add_train_dataset(5)
     result = test(
-        train()
+        train(descriptor=SIFT(entry_path=cfg['Victor']['SIFT']))
     )
     
     print(result[0])

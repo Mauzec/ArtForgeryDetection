@@ -57,7 +57,7 @@ class BoVW():
 
         for _, descriptor in descriptor_list[1:]:
             descriptors = np.vstack((descriptors,descriptor))
-        descriptors = descriptors.astype(float)
+        descriptors = descriptors.astype(np.float32)
         
         self._code_book = self._cluster.fit_predict(descriptors)
         
@@ -186,11 +186,16 @@ class BoVW():
             isWritten = cv2.imwrite(image_path, image)
         return image_path
     
-    def save_model(self, directory: str, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
-                   name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
+    def save_model(self,
+                   directory: str, name_model = 'modelSVM.jolib',
+                   name_classes = "name_classes.json",
+                   name_scaler = 'std_scaler.joblib',
+                   name_code_book = 'code_book_file_name.npy',
+                   name_cluster  ="cluster.jolib") -> None:
          
         dump(self._clf, f"{directory}\\{name_model}", compress=True)
         dump(self._stdslr, f"{directory}\\{name_scaler}", compress=True)
+        dump(self._cluster, f"{directory}\\{name_cluster}", compress=True)
         np.save(f"{directory}\\{name_code_book}", self._code_book)
         with open(f"{directory}\\{name_classes}", "w") as json_file:
             data = {"names": self._class_names}
@@ -198,11 +203,16 @@ class BoVW():
             
         print("model is saved")
         
-    def download_model(self, directory: str, name_model = 'modelSVM.jolib', name_classes = "name_classes.json",
-                       name_scaler = 'std_scaler.joblib', name_code_book = 'code_book_file_name.npy') -> None:
+    def download_model(self,
+                   directory: str, name_model = 'modelSVM.jolib',
+                   name_classes = "name_classes.json",
+                   name_scaler = 'std_scaler.joblib',
+                   name_code_book = 'code_book_file_name.npy',
+                   name_cluster  ="cluster.jolib") -> None:
         
         self._clf = load(f"{directory}\\{name_model}")
         self._stdslr = load(f"{directory}\\{name_scaler}")
+        self._cluster = load(f"{directory}\\{name_cluster}")
         self._code_book = np.load(f"{directory}\\{name_code_book}")
         with open(f"{directory}\\{name_classes}", 'r') as json_file: 
             self._class_names = json.load(json_file)["names"]
