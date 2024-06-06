@@ -1,7 +1,9 @@
 from BoVW.BoVW import BoVW
 from dataset.get_pictures import DatasetOperations
+from CustomDescriptors.abstract.abstract import ABSDescriptor
 from CustomDescriptors.SiftDescriptor.SIFT import SIFT
-from CustomDescriptors.ResnetDescriptor.Resnet import Resnet
+from CustomDescriptors.AkazeDescriptor.AKAZE import AKAZE
+from CustomDescriptors.OrbDescriptor.ORB import ORB
 from sklearn.cluster import KMeans
 from sklearn.svm import LinearSVC
 
@@ -16,10 +18,9 @@ def add_train_dataset(percentage: int = 100):
     DatasetOperations.get_mona_original(PATH=PATH)
     DatasetOperations.get_work_train_dataset(PATH=PATH, percentage_train=percentage)
     DatasetOperations.get_mona_test(PATH=PATH)
-    DatasetOperations.scale_all()
     
 def train(
-    descriptor = SIFT(entry_path=cfg['Victor']['SIFT']),
+    descriptor: ABSDescriptor = SIFT(entry_path=cfg['Victor']['SIFT']),
     cluster = KMeans,
     number_words = 200,
     clf = LinearSVC(max_iter=80000)
@@ -48,9 +49,10 @@ def test(bovw: BoVW) -> tuple[list[str], str]:
     
     
 if __name__ == "__main__":
+    DatasetOperations.clear()
     add_train_dataset(5)
     result = test(
-        train(descriptor=SIFT(entry_path=cfg['Victor']['SIFT']))
+        train()
     )
     
     print(result[0])

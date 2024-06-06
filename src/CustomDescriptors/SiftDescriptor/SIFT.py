@@ -1,14 +1,17 @@
+from CustomDescriptors.abstract.abstract import ABSDescriptor
+import numpy as np
+from numpy.typing import NDArray
 import os
 import json
 
-class SIFT:
+class SIFT(ABSDescriptor):
     def __init__(self, entry_path: str = None) -> None:
         if not entry_path:
             ValueError("enter the entry path")
             
         self.entry_path = f".\{entry_path}"
         
-    def compute(self, image_path: str, index_process = -1, drawkps: int = 0) -> tuple[list, list]:
+    def compute(self, image_path: str, index_process = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
         ''' Search keypoints and descriptors. 
             Usage example:
                 from sift_cpp.compute import DescriptorSift
@@ -27,7 +30,7 @@ class SIFT:
         for item in data['kpsdes']:
             kps.append((item["x"], item["y"]))
             des.append(item['des'])
-        return kps, des
+        return np.array(kps), np.array(des)
 
         
 

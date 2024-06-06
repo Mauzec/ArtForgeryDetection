@@ -19,7 +19,7 @@ class BoVW():
                  code_book = np.ndarray(shape=0),
                  number_words = 200,
                  clf = LinearSVC(max_iter=80000),
-                 cluster = KMeans,
+                 cluster = KMeans(n_clusters=200),
                  scale: bool=False) -> None:
         
         self._descriptor = descriptor
@@ -57,7 +57,7 @@ class BoVW():
 
         for _, descriptor in descriptor_list[1:]:
             descriptors = np.vstack((descriptors,descriptor))
-        descriptors = descriptors.astype(np.float32)
+        descriptors = descriptors.astype(np.double)
         
         self._code_book = self._cluster.fit_predict(descriptors)
         
@@ -135,7 +135,7 @@ class BoVW():
         return image_features
     
     def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
-        image_feature = np.zeros(self._number_words,"float32")
+        image_feature = np.zeros(self._number_words,"double")
         words = self._cluster.predict(descriptor)
         for w in words:
             image_feature[w] += 1 
