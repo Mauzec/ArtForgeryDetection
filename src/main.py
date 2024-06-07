@@ -50,7 +50,7 @@ def test(bovw: BoVW) -> tuple[list[str], str]:
     
 if __name__ == "__main__":
     DatasetOperations.clear()
-    add_train_dataset(5)
+    add_train_dataset(percentage=5)
     result = test(
         train()
     )

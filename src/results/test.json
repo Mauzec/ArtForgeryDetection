@@ -1,0 +1,1 @@
+{"parametres": {"descriptor": "AKAZE", "number words": "200", "clf": "DecisionTreeClassifier(max_depth=5, min_samples_leaf=30)", "cluster": "KMeans()", "scale": "False"}, "result": ["other_artist", "other_artist", "other_artist", "other_artist", "other_artist"], "testing": {"accurancy": 0.8, "accurancy first class": 0.0, "accurancy second class": 1.0}}

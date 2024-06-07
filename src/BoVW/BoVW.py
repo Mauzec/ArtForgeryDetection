@@ -97,7 +97,11 @@ class BoVW():
         accuracy_c1 = right_class[0] / count_in_class[0] if count_in_class[0] > 0 else 1.0
         accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[1] > 0 else 1.0
         
-        return f"Общая вероятность вывода: {accuracy},\nПравильность определения первого класса: {accuracy_c1},\nправильность определения второго класса: {accuracy_c2}"
+        return {
+            "accurancy": accuracy,
+            "accurancy first class": accuracy_c1,
+            "accurancy second class": accuracy_c2
+        }
         
     def clear_dataset(self) -> None:
         self._image_paths = []
@@ -174,6 +178,16 @@ class BoVW():
             plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))
             
         plt.savefig("example")
+        
+    @property
+    def parametres(self) -> str:
+        return {
+    "descriptor": f"{self._descriptor}",
+    "number words": f"{self._number_words}",
+    "clf": f"{self._clf}",
+    "cluster": f"{self._cluster}",
+    "scale": f"{self._scale}"
+        }
         
     def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
         if self._scale:

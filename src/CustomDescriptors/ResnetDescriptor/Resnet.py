@@ -17,4 +17,7 @@ class Resnet(ABSDescriptor):
         image_expanded = np.expand_dims(image, axis=0)
         features = model.predict(image_expanded)[0]
         return None, features.reshape(-1, features.shape[-1])
+    
+    def __repr__(self) -> str:
+        return "Resnet"
         

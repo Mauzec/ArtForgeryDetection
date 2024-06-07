@@ -31,6 +31,9 @@ class SIFT(ABSDescriptor):
             kps.append((item["x"], item["y"]))
             des.append(item['des'])
         return np.array(kps), np.array(des)
+    
+    def __repr__(self) -> str:
+        return "SIFT"
 
         
 

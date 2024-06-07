@@ -10,3 +10,6 @@ class AKAZE(ABSDescriptor):
         kp, des = AKAZE.detectAndCompute(img, None)
         print(f"found {len(kp)} keypoints")
         return np.array(kp), np.array(des)
+    
+    def __repr__(self) -> str:
+        return "AKAZE"
