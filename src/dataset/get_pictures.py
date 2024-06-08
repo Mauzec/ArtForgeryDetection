@@ -8,37 +8,6 @@ PATH = "C:\\home_screen\\programming\\algoritm and data structure\\Dataset" if i
 cwd = os.getcwd()
 
 class DatasetOperations:
-    @staticmethod
-    def get_images(PATH: str=PATH,
-                   start: int=0,
-                   end: int=0,
-                   for_using: str="train",
-                   all: bool=False,
-                   similar: bool=False) -> None:
-        
-        DESTINATION_PATH = f"{cwd}\\dataset\\{for_using}\\other_artist" if is_win else f"{cwd}/dataset/{for_using}/other_artist"
-        for path in [PATH, DESTINATION_PATH]:
-            if not os.path.isdir(path):
-                    raise NameError("No such directory " + path)
-
-        if similar:
-            names_folder = [
-                "Raphael",
-                "Michelangelo",
-                "Titian",
-                "Sandro_Botticelli",
-                "Jan_van_Eyck"
-            ]
-        else:
-            names_folder = os.listdir(PATH)
-        k = 0
-        for folder in names_folder:
-            if all:
-                k += DatasetOperations.get_pictures_folder(PATH, all=True, folder=folder, for_using=for_using)
-            else:
-                k += DatasetOperations.get_pictures_folder(PATH, start=start, end=end, folder=folder, for_using=for_using)
-
-        print(f"скопировано {k} картинок в {for_using}")
         
     @staticmethod
     def get_mona_original(PATH: str=PATH,
@@ -85,45 +54,26 @@ class DatasetOperations:
         
         
     @staticmethod
-    def get_work_dataset(PATH: str=PATH,
-                         percentage_train: int=80) -> None:
-        if not os.path.isdir(PATH):
-            raise NameError("No such directory " + PATH)
-        
-        names_folder = [
-            "Raphael",
-            "Michelangelo",
-            "Titian",
-            "Sandro_Botticelli",
-            "Jan_van_Eyck"
-        ]
-        k_train = 0
-        k_test =0
-        for folder in names_folder:
-            files = [file for root, dirs, files in os.walk(os.path.join(PATH, folder)) for file in files]
-            for_using = "train"
-            end_for_train = round(len(files) * percentage_train / 100)
-            k_train += DatasetOperations.get_pictures_folder(PATH, start=0, end=end_for_train, folder=folder, for_using=for_using)
-            for_using = "test"
-            k_test += DatasetOperations.get_pictures_folder(PATH, start=end_for_train, end=len(files), 
-                                                        folder=folder, for_using=for_using)
-
-        print(f"скопировано {k_train} картинок в train\nскопировано {k_test} картинок в test")  
-        
-    @staticmethod
     def get_work_train_dataset(PATH: str=PATH,
                                percentage_train: int=50) -> None:
         if not os.path.isdir(PATH):
             raise NameError("No such directory " + PATH)
         
+        # names_folder = [
+        #     "Raphael",
+        #     "Mikyalendjelo"
+        #     "Titian",
+        #     "Jan_van_Eyck",
+        #     'Peter_Paul_Rubens'
+        # ]
+        names_folder = {
+            'Joshua_Reynolds',
+            'Raphael',
+            'Rembrandt',
+            'Thomas_Lawrence',
+            'Titian'
+        }
         
-        names_folder = [
-            "Raphael",
-            "Michelangelo",
-            "Titian",
-            "Sandro_Botticelli",
-            "Jan_van_Eyck"
-        ]
         k_train = 0
         for folder in names_folder:
             files = [file for root, dirs, files in os.walk(os.path.join(f"{PATH}\\Images" if is_win else f"{PATH}/Images", folder)) for file in files]
