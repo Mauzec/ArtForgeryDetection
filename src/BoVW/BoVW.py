@@ -54,9 +54,10 @@ class BoVW():
     def model_training(self) -> None:
         descriptor_list = self._get_descriptor_list()
         descriptors = descriptor_list[0][1]
+        
 
         for _, descriptor in descriptor_list[1:]:
-            descriptors = np.vstack((descriptors,descriptor))
+            descriptors = np.vstack((descriptors,descriptor[1]))
         descriptors = descriptors.astype(np.double)
         
         self._code_book = self._cluster.fit_predict(descriptors)
