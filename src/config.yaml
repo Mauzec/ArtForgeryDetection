@@ -1,8 +1,4 @@
 Victor:
   Dataset: "C:\\home_screen\\programming\\algoritm and data structure\\Dataset"
   SIFT: "CustomDescriptors\\SiftDescriptor\\main.exe"
-  Test: [
-        "dataset\\test\\artist\\mona_original.png",
-        "dataset\\test\\other_artist\\mona_younger_1.jpg",
-        "dataset\\test\\other_artist\\mona_younger_2.jpg",
-        ]
+  Test: "C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\src\\dataset\\test"

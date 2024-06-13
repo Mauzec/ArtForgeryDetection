@@ -10,9 +10,8 @@ cwd = os.getcwd()
 class DatasetOperations:
         
     @staticmethod
-    def get_mona_original(PATH: str=PATH,
-                          resolution: str = "low") -> None:
-        shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\mona_original.png" if is_win else f"{PATH}/Mona/{resolution}_resolution/mona_original.png",
+    def get_mona_original(PATH: str=PATH) -> None:
+        shutil.copy(f"{PATH}\\Mona\\high_resolution\\mona_original.png" if is_win else f"{PATH}/Mona/high_resolution/mona_original.png",
                     f"{cwd}\\dataset\\train\\artist" if is_win else f"{cwd}/dataset/train/artist"
                     )
         
@@ -41,12 +40,12 @@ class DatasetOperations:
     def get_mona_test(PATH: str=PATH,
                           resolution: str = "low") -> None:
         
-        shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\mona_original.png" if is_win else f"{PATH}/Mona/{resolution}_resolution/mona_original.png",
+        shutil.copy(f"{PATH}\\Mona\\high_resolution\\mona_original.png" if is_win else f"{PATH}/Mona/{resolution}_resolution/mona_original.png",
             f"{cwd}\\dataset\\test\\artist" if is_win else f"{cwd}/dataset/test/artist"
             )
         
         for mona_name in os.listdir(f"{PATH}\\Mona\\{resolution}_resolution" if is_win else f"{PATH}/Mona/{resolution}_resolution"):
-            if "younger" in mona_name:
+            if not mona_name == "mona_original.png": 
                 shutil.copy(f"{PATH}\\Mona\\{resolution}_resolution\\{mona_name}" if is_win else f"{PATH}/Mona/{resolution}_resolution/{mona_name}",
                             f"{cwd}\\dataset\\test\\other_artist" if is_win else f"{cwd}/dataset/test/other_artist"
                             )

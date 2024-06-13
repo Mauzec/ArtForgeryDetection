@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans
 from sklearn.svm import LinearSVC
 from multiprocessing import Process, Queue
 import json
+import os
 
 import yaml
 with open('config.yaml', 'r') as config:
@@ -17,7 +18,6 @@ class Research:
     @staticmethod
     def add_train_dataset(percentage: int = 100, scale: bool = True, resolution: str = "high"):
         DatasetOperations.clear()
-        DatasetOperations.get_mona_original(PATH=PATH, resolution=resolution)
         DatasetOperations.get_work_train_dataset(PATH=PATH, percentage_train=percentage)
         DatasetOperations.get_mona_test(PATH=PATH, resolution=resolution)
         if scale:
@@ -49,8 +49,9 @@ class Research:
     def test(bovw: BoVW) -> tuple[list[str], str]:
         propotion_correctly_definded = bovw.testing("dataset/test")
         result = [
-                bovw.classification_image(image)
-                for image in cfg['Victor']['Test']
+                bovw.classification_image(f"{cfg['Victor']['Test']}\\{path}\\{image}")
+                for path in ["artist", "other_artist"]
+                for image in os.listdir(f"{cfg['Victor']['Test']}\\{path}")
                 ]
 
         return bovw.parametres, result, propotion_correctly_definded
