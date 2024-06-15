@@ -13,11 +13,13 @@ def generate_seeds(image_patch):
     return seeds
 
 def segment_brushstroke(seed, threshold, image_patch):
-    # Функция сегментации мазка
+    h, w = image_patch.shape[:2]
+    mask = np.zeros((h + 2, w + 2), np.uint8)
+    
     x, y = seed
-    mask = np.zeros(image_patch.shape[:2], np.uint8)
     cv2.floodFill(image_patch, mask, (x, y), 255, (threshold,)*3, (threshold,)*3, flags=cv2.FLOODFILL_MASK_ONLY)
-    return mask
+    
+    return mask[1:-1, 1:-1]
 
 def check_area(candidate_brushstroke):
     # Проверка валидности области мазка
@@ -65,38 +67,18 @@ def compute_width(candidate_brushstroke):
     return 0
 
 def extract_brushstrokes(image_patch):
-    seeds = generate_seeds(image_patch)
     brushstrokes = []
-
+    seeds = [(x, y) for y in range(0, image_patch.shape[0], 10) for x in range(0, image_patch.shape[1], 10)]
+    threshold = 10
+    
     for seed in seeds:
-        threshold = 20  # начальный порог
-        valid_brushstroke = False
-        
-        while not valid_brushstroke:
-            valid_area = False
-            while not valid_area:
-                candidate_brushstroke = segment_brushstroke(seed, threshold, image_patch)
-                valid_area = check_area(candidate_brushstroke)
-                if not valid_area:
-                    threshold += 5  # обновление порога
-            
-            orientation = compute_orientation(candidate_brushstroke)
-            length = compute_length(candidate_brushstroke)
-            width = compute_width(candidate_brushstroke)
-            
-            valid_brushstroke = check_shape(candidate_brushstroke)
-        
-        brushstrokes.append({
-            'brushstroke': candidate_brushstroke,
-            'orientation': orientation,
-            'length': length,
-            'width': width
-        })
+        candidate_brushstroke = segment_brushstroke(seed, threshold, image_patch.copy())
+        brushstrokes.append(candidate_brushstroke)
     
     return brushstrokes
 
 # Проверка наличия файла и его доступности
-image_path = 'data/mona_original.png'
+image_path = "C:\\home_screen\\programming\\algoritm and data structure\\Dataset\\Mona\\high_resolution\\mona_original.png"
 if not os.path.isfile(image_path):
     print(f"Error: File {image_path} does not exist or is not accessible")
 else:
