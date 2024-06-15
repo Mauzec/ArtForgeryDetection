@@ -3,3 +3,4 @@ Victor:
   SIFT: "CustomDescriptors\\SiftDescriptor\\main.exe"
   FACE: "CustomDescriptors\\FaceDescriptor\\shape_predictor_68_face_landmarks.dat"
   Test: "dataset\\test"
+  Resnet: "CustomDescriptors\\ResnetDescriptor"
