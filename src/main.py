@@ -12,7 +12,7 @@ from dataset.get_pictures import DatasetOperations
 from CustomDescriptors.abstract.abstract import ABSDescriptor
 from CustomDescriptors.AkazeDescriptor.AKAZE import AKAZE
 from CustomDescriptors.OrbDescriptor.ORB import ORB
-# from CustomDescriptors.ResnetDescriptor.Resnet import Resnet
+from CustomDescriptors.ResnetDescriptor.Resnet import Resnet
 from CustomDescriptors.SiftDescriptor.SIFT import SIFT
 from CustomDescriptors.FaceDescriptor.FACE import FACE
 from helper.helper import Research, Multiprocessor
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     descriptors = {
         "ORB": ORB(),
         "AKAZE": AKAZE(),
-        "Resnet": Resnet(),
+        "Resnet": Resnet(resnet_path=cfg['Victor']['Resnet']),
         "SIFT" : SIFT(entry_path=cfg['Victor']['SIFT'])
     }
     

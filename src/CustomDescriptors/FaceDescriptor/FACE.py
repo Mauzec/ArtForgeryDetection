@@ -6,10 +6,15 @@ from imutils import face_utils
 from CustomDescriptors.abstract.abstract import ABSDescriptor
 
 class FACE(ABSDescriptor):
-    def __init__(self, size: tuple = (10**2, 10**3), predictor_path: str = None) -> None:
+    def __init__(self,
+                 size: tuple,
+                 predictor_path: str,
+                 recognition_path: str
+                 ) -> None:
         self.size = size
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(predictor_path)
+        self.recognition = dlib.face_recognition_model_v1(recognition_path)
         
     def compute(self, image_path: str, index_process = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
         
