@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 def generate_seeds(image_patch):
     # Генерация начальных точек (семян)
@@ -93,7 +95,32 @@ def extract_brushstrokes(image_patch):
     
     return brushstrokes
 
-image_patch = cv2.imread('.jpg', cv2.IMREAD_COLOR)
-brushstrokes = extract_brushstrokes(image_patch)
-for brushstroke in brushstrokes:
-    print(brushstroke)
+# Проверка наличия файла и его доступности
+image_path = 'data/mona_original.png'
+if not os.path.isfile(image_path):
+    print(f"Error: File {image_path} does not exist or is not accessible")
+else:
+    image_patch = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if image_patch is None:
+        print(f"Error: Unable to load image at {image_path}. Check if the file is a valid image.")
+    else:
+        brushstrokes = extract_brushstrokes(image_patch)
+        
+        # Визуализация мазков
+        for idx, brushstroke in enumerate(brushstrokes):
+            plt.subplot(1, len(brushstrokes), idx + 1)
+            plt.imshow(brushstroke['brushstroke'], cmap='gray')
+            plt.title(f'Stroke {idx + 1}')
+            plt.axis('off')
+        
+        plt.show()
+        
+        # Дополнительно визуализируем мазки на исходном изображении
+        for brushstroke in brushstrokes:
+            contours, _ = cv2.findContours(brushstroke['brushstroke'], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(image_patch, contours, -1, (0, 255, 0), 2)
+        
+        plt.imshow(cv2.cvtColor(image_patch, cv2.COLOR_BGR2RGB))
+        plt.title('Brushstrokes on Image')
+        plt.axis('off')
+        plt.show()
