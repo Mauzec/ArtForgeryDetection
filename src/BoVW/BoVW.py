@@ -41,7 +41,7 @@ class BoVW():
         
         self._class_names = os.listdir(path)
         
-        for k, name in enumerate(self._class_names):
+        for k, name in enumerate(self._class_names): 
             directory = os.path.join(path, name)
             class_path = (os.path.join(directory,f) for f in os.listdir(directory))
             was_len = len(self._image_paths)
@@ -56,7 +56,9 @@ class BoVW():
         descriptors = descriptor_list[0][1]
 
         for _, descriptor in descriptor_list[1:]:
-            descriptors = np.vstack((descriptors,descriptor[1]))
+            if not descriptor.shape[0] == 0: 
+                print(descriptor.shape)
+                descriptors = np.vstack((descriptors,descriptor[1]))
             
         descriptors = descriptors.astype(np.float64)
         

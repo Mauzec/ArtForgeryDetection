@@ -29,7 +29,7 @@ class Research:
         descriptor = AKAZE(),
         cluster = KMeans(),
         number_words = 200,
-        clf = LinearSVC(),
+        clf = LinearSVC(max_iter=800),
         scale = False
         ) -> BoVW:
         
