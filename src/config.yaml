@@ -1,4 +1,5 @@
 Victor:
   Dataset: "C:\\home_screen\\programming\\algoritm and data structure\\Dataset"
   SIFT: "CustomDescriptors\\SiftDescriptor\\main.exe"
-  Test: "C:\\home_screen\\programming\\algoritm and data structure\\ArtForgeryDetection\\src\\dataset\\test"
+  FACE: "CustomDescriptors\\FaceDescriptor\\shape_predictor_68_face_landmarks.dat"
+  Test: "dataset\\test"

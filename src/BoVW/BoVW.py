@@ -11,7 +11,7 @@ from joblib import dump, load
 import json
 from CustomDescriptors.SiftDescriptor import SIFT
 
-NUM_PROCESS = 8
+NUM_PROCESS = 1
 
 class BoVW():
     def __init__(self,
@@ -28,7 +28,7 @@ class BoVW():
         self._image_classes = []
         self._code_book = code_book
         self._number_words = number_words
-        self._stdslr = np.ndarray(shape=0)
+        self._stdslr = StandardScaler()
         self._clf = clf
         self._cluster = cluster
         self._class_names = []
@@ -57,13 +57,14 @@ class BoVW():
 
         for _, descriptor in descriptor_list[1:]:
             descriptors = np.vstack((descriptors,descriptor[1]))
-        descriptors = descriptors.astype(np.double)
+            
+        descriptors = descriptors.astype(np.float64)
         
         self._code_book = self._cluster.fit_predict(descriptors)
         
         image_features = self._get_image_features(descriptor_list)
         
-        self._stdslr  = StandardScaler().partial_fit(image_features)
+        self._stdslr.fit(image_features)
         image_features=self._stdslr.transform(image_features)
         
         self._clf.fit(image_features, np.array(self._image_classes))
@@ -112,7 +113,6 @@ class BoVW():
     def classification_image(self, image_path: str) -> str:
         if not os.path.isfile(image_path):
             return ("no file", -1)
-        
         descriptor = self._get_descriptor(image_path, -1)
         feature = np.array([self._get_image_feature(descriptor, -1)])
         feature = self._stdslr.transform(feature)
@@ -131,7 +131,7 @@ class BoVW():
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
         image = self._image(image_path)
         _, descriptor = self._descriptor.compute(image, index_process=index_process)
-        return descriptor
+        return np.array(descriptor, dtype=np.float64)
     
     def _get_image_features(self, descriptor_list: list) -> np.ndarray:
         image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
@@ -139,7 +139,7 @@ class BoVW():
         return image_features
     
     def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
-        image_feature = np.zeros(self._number_words,"double")
+        image_feature = np.zeros(self._number_words, dtype=np.float64)
         words = self._cluster.predict(descriptor)
         for w in words:
             image_feature[w] += 1 
@@ -172,7 +172,7 @@ class BoVW():
     def example(self) -> None:
         image_path = choice(self._image_paths)
         image = self._image(image_path)
-        keypoints, _ = self._descriptor.compute(image)
+        keypoints, _ = self._descriptor.compute(image, index_process = -1)
         for keypoint in keypoints:
             x, y = keypoint
             plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))

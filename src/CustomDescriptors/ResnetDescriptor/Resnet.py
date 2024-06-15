@@ -8,11 +8,12 @@ import os
 
 class Resnet(ABSDescriptor):
     def __init__(self) -> None:
-        model = ResNet101(weights='imagenet', include_top=False)
-        model.save("resnet.h5")
+        if not "resnet.keras" in os.listdir("CustomDescriptors\\ResnetDescriptor"):
+            model = ResNet101(weights='imagenet', include_top=False)
+            model.save("CustomDescriptors\\ResnetDescriptor\\resnet.keras")
         
-    def compute(self, image_path: str, index_process:int = -1) -> tuple[NDArray, NDArray]: 
-        model = load_model("resnet.h5")
+    def compute(self, image_path: str, index_process:int = -1) -> tuple[NDArray, NDArray]:
+        model = load_model("CustomDescriptors\\ResnetDescriptor\\resnet.keras")
         image = cv2.imread(image_path)
         image_expanded = np.expand_dims(image, axis=0)
         features = model.predict(image_expanded)[0]

@@ -11,7 +11,7 @@ class SIFT(ABSDescriptor):
             
         self.entry_path = f".\{entry_path}"
         
-    def compute(self, image_path: str, index_process = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
+    def compute(self, image_path: str, index_process: int = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
         ''' Search keypoints and descriptors. 
             Usage example:
                 from sift_cpp.compute import DescriptorSift
@@ -20,6 +20,8 @@ class SIFT(ABSDescriptor):
                 kps, des = DescriptorSift.compute('book.png', drawkps=1) for create result.jpg with keypoints marked
         '''
         assert drawkps == 0 or drawkps == 1
+        if not os.path.isfile(image_path):
+            print(image_path)
         os.system(f'{self.entry_path} {image_path} -drawkps={drawkps} {index_process}')
 
         data = None
