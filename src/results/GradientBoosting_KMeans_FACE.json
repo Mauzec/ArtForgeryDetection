@@ -1,0 +1,1 @@
+{"parametres": {"descriptor": "FACE", "number words": "30", "clf": "GradientBoostingClassifier()", "cluster": "KMeans(n_clusters=30)", "scale": "False"}, "result": ["artist", "other_artist", "other_artist"], "testing": {"accurancy": 1.0, "accurancy first class": 1.0, "accurancy second class": 1.0}}

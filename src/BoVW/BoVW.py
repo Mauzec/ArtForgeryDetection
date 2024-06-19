@@ -11,7 +11,7 @@ from joblib import dump, load
 import json
 from CustomDescriptors.SiftDescriptor import SIFT
 
-NUM_PROCESS = 1
+NUM_PROCESS = 8
 
 class BoVW():
     def __init__(self,
@@ -43,7 +43,7 @@ class BoVW():
         
         for k, name in enumerate(self._class_names): 
             directory = os.path.join(path, name)
-            class_path = (os.path.join(directory,f) for f in os.listdir(directory))
+            class_path = [os.path.join(directory,f) for f in os.listdir(directory)]
             was_len = len(self._image_paths)
             self._image_paths += class_path
             self._image_classes += [k] * (len(self._image_paths) - was_len)
@@ -53,12 +53,21 @@ class BoVW():
         
     def model_training(self) -> None:
         descriptor_list = self._get_descriptor_list()
+        
+        k = 0
+        while k < len(descriptor_list):
+            if descriptor_list[k][1].shape[0] == 0:
+                descriptor_list.pop(k)
+                self._image_classes.pop(k)
+                k -= 1
+                
+            k += 1
+        
         descriptors = descriptor_list[0][1]
+        
 
         for _, descriptor in descriptor_list[1:]:
-            if not descriptor.shape[0] == 0: 
-                print(descriptor.shape)
-                descriptors = np.vstack((descriptors,descriptor[1]))
+            descriptors = np.vstack((descriptors, descriptor))
             
         descriptors = descriptors.astype(np.float64)
         
@@ -82,7 +91,7 @@ class BoVW():
         test_features = self._stdslr.transform(test_features)
 
         true_classes = []
-        count_in_class = [0]*2
+        count_in_class = [0] * len(self._image_classes)
         for k in self._image_classes:
             true_classes.append(k)
             count_in_class[k] += 1
@@ -91,7 +100,7 @@ class BoVW():
         for k in self._clf.predict(test_features):
             predict_classes.append(k)
         
-        right_class = [0] * 2
+        right_class = [0] * len(self._image_classes)
         for k in range(len(predict_classes)):
             if predict_classes[k] == true_classes[k]:
                 right_class[true_classes[k]] += 1

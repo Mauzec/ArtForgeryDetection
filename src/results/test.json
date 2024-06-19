@@ -1,1 +1,0 @@
-{"parametres": {"descriptor": "SIFT", "number words": "20", "clf": "BaggingClassifier()", "cluster": "Birch(n_clusters=20)", "scale": "False"}, "result": ["other_artist"], "testing": {"accurancy": 1.0, "accurancy first class": 1.0, "accurancy second class": 1.0}}

@@ -2,10 +2,11 @@ from BoVW.BoVW import BoVW
 from dataset.get_pictures import DatasetOperations
 from CustomDescriptors.AkazeDescriptor.AKAZE import AKAZE
 from sklearn.cluster import KMeans
-from sklearn.svm import LinearSVC
+from sklearn.ensemble import GradientBoostingClassifier
 from multiprocessing import Process, Queue
 import json
 import os
+import itertools
 
 import yaml
 with open('config.yaml', 'r') as config:
@@ -29,7 +30,7 @@ class Research:
         descriptor = AKAZE(),
         cluster = KMeans(),
         number_words = 200,
-        clf = LinearSVC(max_iter=800),
+        clf = GradientBoostingClassifier(),
         scale = False
         ) -> BoVW:
         
@@ -47,15 +48,19 @@ class Research:
         return bovw
     
     @staticmethod
-    def test(bovw: BoVW) -> tuple[list[str], str]:
+    def test(bovw: BoVW, only_testing: bool = False) -> tuple[list[str], str, float] | float:
         propotion_correctly_definded = bovw.testing("dataset\\test")
-        result = [
-                bovw.classification_image(f"{cfg['Victor']['Test']}\\{path}\\{image}")
-                for path in ["artist", "other_artist"]
-                for image in os.listdir(f"{cfg['Victor']['Test']}\\{path}")
-                ]
+        
+        if not only_testing:
+            result = [
+                    bovw.classification_image(f"{cfg['Victor']['Test']}\\{path}\\{image}")
+                    for path in ["artist", "other_artist"]
+                    for image in os.listdir(f"{cfg['Victor']['Test']}\\{path}")
+                    ]
 
-        return bovw.parametres, result, propotion_correctly_definded
+            return bovw.parametres, result, propotion_correctly_definded
+        else:
+            return propotion_correctly_definded['accurancy']
     
     @staticmethod
     def safe(name: str, results: tuple) -> None:
@@ -92,5 +97,87 @@ class Multiprocessor:
         for p in self.processes:
             p.join()
         return rets
+            
+    
+class GridSearch:
+    @staticmethod                  
+    def grid_search(
+        cluster = None,
+        clf  = None,
+        descriptor = AKAZE(),
+        parametres: dict = None,
+        type_grid: str = "cluster"
+        ) -> dict:
+        
+        DatasetOperations.split_dataset()
+        DatasetOperations.scale_all()
+        results = list()
+        
+        param_names = parametres.keys()
+        kwargs = dict()
+        for params in itertools.product(
+            *parametres.values()
+        ):
+        
+            attributes = ""
+            for name, value in zip(param_names, params):
+                attributes += f"{name}={value};"
+                kwargs[name] = value
+                
+            results.append(
+                (
+                    attributes,
+                    Research.test(
+                        Research.train(
+                            clf=clf,
+                            descriptor=descriptor,
+                            cluster=cluster(
+                                **kwargs
+                            )
+                        ) if type_grid == "cluster" else Research.train(
+                            clf=clf(
+                                **kwargs
+                                ),
+                            descriptor=descriptor,
+                            cluster=cluster
+                        ),
+                        only_testing=True
+                    )
+                )
+            )
+                        
+        return max(results, key=lambda item: item[1])
+                        
+                        
+                        
+                    
+    @staticmethod
+    def get_accurancy(
+        cluster: KMeans = None,
+        clf  = GradientBoostingClassifier(),
+        descriptor = AKAZE(),
+        number_words: int = None
+    ) -> float:
+        
+        return Research.test(
+            Research.train(
+                descriptor=descriptor,
+                clf=clf,
+                cluster=cluster,
+                number_words=number_words,
+                scale=False
+            ),
+            only_testing=True
+        )
+        
+        
+        
+        
+    
+        
+            
+        
+        
+
 
         

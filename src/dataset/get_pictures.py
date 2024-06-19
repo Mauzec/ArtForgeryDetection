@@ -1,6 +1,7 @@
 import os
 import shutil
 import cv2
+import random
 from platform import platform as pf
 is_win = pf().startswith('Win')
 
@@ -58,13 +59,6 @@ class DatasetOperations:
         if not os.path.isdir(PATH):
             raise NameError("No such directory " + PATH)
         
-        # names_folder = [
-        #     "Raphael",
-        #     "Mikyalendjelo"
-        #     "Titian",
-        #     "Jan_van_Eyck",
-        #     'Peter_Paul_Rubens'
-        # ]
         names_folder = {
             'Joshua_Reynolds',
             'Raphael',
@@ -111,7 +105,7 @@ class DatasetOperations:
     @staticmethod
     def clear() -> None:   
         for role in ["train", "test"]:
-            for artist in ["artist", "other_artist"]:
+            for artist in os.listdir(f"{cwd}\\dataset\\{role}"):
                 path = f"{cwd}\\dataset\\{role}\\{artist}" if is_win else f"{cwd}/dataset/{role}/{artist}" 
                 shutil.rmtree(path)
                 os.mkdir(path)
@@ -119,7 +113,7 @@ class DatasetOperations:
     @staticmethod
     def scale_all():
         for for_using in ['train', 'test']:
-            for type_artist in ['artist', 'other_artist']:
+            for type_artist in os.listdir(f"{cwd}\\dataset\\{for_using}"):
                 for image in os.listdir(f"{cwd}\\dataset\\{for_using}\\{type_artist}"):
                     DatasetOperations.scale_image(f"{cwd}\\dataset\\{for_using}\\{type_artist}\\{image}")
     
@@ -133,7 +127,37 @@ class DatasetOperations:
         image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
         isWritten = cv2.imwrite(image_path, image)
         return image_path
-                
     
+    @staticmethod
+    def get_image_path(PATH: str = f"{PATH}\\Images") -> dict:
+        artists = dict()
+        
+        for dir in os.listdir(PATH):
+            artists[dir] = list()
+            for file in os.listdir(f"{PATH}\\{dir}"):
+                artists[dir].append(f"{PATH}\\{dir}\\{file}")
+            
+        return artists
     
+    @staticmethod
+    def split_dataset(ratio: float = 0.8) -> None:
+        DatasetOperations.clear()
+        image_path = DatasetOperations.get_image_path()
+        
+        for artist, images in image_path.items():
+            random.shuffle(images)
+            images = images[:10]
+            dataset = dict()
+            dataset['train'] = images[:round(0.8 * len(images))]
+            dataset['test'] = images[round(0.8 * len(images)):]
+            
+            for for_using in ['train', 'test']:
+            
+                using_path = f"{cwd}\\dataset\\{for_using}\\{artist}" if is_win else f"{cwd}/dataset/{for_using}/{artist}"
+
+                if not os.path.exists(using_path):
+                    os.makedirs(using_path)
+
+                for file_path in dataset[for_using]:
+                    shutil.copy(file_path, using_path)
                                 
