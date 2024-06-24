@@ -76,6 +76,34 @@ class Research:
                 "testing": results[2]
             }
             json.dump(data, file)
+            
+    @staticmethod
+    def testing(
+        clfs: dict = None,
+        clusters: dict = None,
+        descriptors: dict = None,
+        n_clusters: dict = None
+    ):
+        Research.add_train_dataset(percentage=40, scale=True, resolution="high")
+
+        for name_clf, clf in clfs.items():
+            for name_cluster, cluster in clusters.items():
+                for name_descriptor, descriptor in descriptors.items():
+                    print(f"{name_clf}_{name_cluster}_{name_descriptor}")
+                    if not f"{name_clf}_{name_cluster}_{name_descriptor}.json" in os.listdir("results"):
+                        Research.safe(
+                            f"{name_clf}_{name_cluster}_{name_descriptor}",
+                            Research.test(
+                                Research.train(
+                                    clf=clf,
+                                    descriptor=descriptor,
+                                    cluster=cluster,
+                                    scale=False,
+                                    number_words=n_clusters[name_descriptor]
+                                )
+                            )
+
+                        )
 
 class Multiprocessor:
 
@@ -111,11 +139,10 @@ class GridSearch:
         clf  = None,
         descriptor = AKAZE(),
         parametres: dict = None,
-        type_grid: str = "cluster"
+        type_grid: str = "cluster",
+        algorithm: str = "Without Name"
         ) -> dict:
         
-        DatasetOperations.split_dataset()
-        DatasetOperations.scale_all()
         results = list()
         
         param_names = parametres.keys()
@@ -129,6 +156,8 @@ class GridSearch:
                 attributes += f"{name}={value};"
                 kwargs[name] = value
                 
+            print(f"{algorithm}: {kwargs}")
+                
             results.append(
                 (
                     attributes,
@@ -138,7 +167,8 @@ class GridSearch:
                             descriptor=descriptor,
                             cluster=cluster(
                                 **kwargs
-                            )
+                            ),
+                            number_words=kwargs["n_clusters"]
                         ) if type_grid == "cluster" else Research.train(
                             clf=clf(
                                 **kwargs
@@ -151,7 +181,7 @@ class GridSearch:
                 )
             )
                         
-        return max(results, key=lambda item: item[1])
+        return algorithm, max(results, key=lambda item: item[1]), results
                         
                         
                         

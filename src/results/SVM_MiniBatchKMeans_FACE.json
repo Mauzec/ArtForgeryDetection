@@ -1,0 +1,1 @@
+{"parametres": {"descriptor": "FACE", "number words": "40", "clf": "LinearSVC(max_iter=8000, tol=0.001)", "cluster": "MiniBatchKMeans(max_no_improvement=3, n_clusters=40)", "scale": "False"}, "result": ["artist", "other_artist", "other_artist"], "testing": {"accurancy": 1.0, "accurancy first class": 1.0, "accurancy second class": 1.0}}
