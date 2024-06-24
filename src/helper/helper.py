@@ -19,6 +19,11 @@ class Research:
     @staticmethod
     def add_train_dataset(percentage: int = 100, scale: bool = True, resolution: str = "high"):
         DatasetOperations.clear()
+        
+        for using in ["Train", "Test"]:
+            for artist in ["artist", "other_artist"]:
+                os.mkdir(f"{cfg['Victor'][using]}\\{artist}")
+                
         DatasetOperations.get_mona_original(PATH=PATH)
         DatasetOperations.get_work_train_dataset(PATH=PATH, percentage_train=percentage)
         DatasetOperations.get_mona_test(PATH=PATH, resolution=resolution)

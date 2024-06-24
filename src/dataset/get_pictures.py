@@ -108,7 +108,6 @@ class DatasetOperations:
             for artist in os.listdir(f"{cwd}\\dataset\\{role}"):
                 path = f"{cwd}\\dataset\\{role}\\{artist}" if is_win else f"{cwd}/dataset/{role}/{artist}" 
                 shutil.rmtree(path)
-                os.mkdir(path)
                 
     @staticmethod
     def scale_all():
