@@ -27,8 +27,9 @@ class Research:
         DatasetOperations.get_mona_original(PATH=PATH)
         DatasetOperations.get_work_train_dataset(PATH=PATH, percentage_train=percentage)
         DatasetOperations.get_mona_test(PATH=PATH, resolution=resolution)
-        if scale:
-            DatasetOperations.scale_all()
+        
+        DatasetOperations.resize_dataset()
+        if scale: DatasetOperations.scale_all()
         
     @staticmethod
     def train(
@@ -69,7 +70,7 @@ class Research:
     
     @staticmethod
     def safe(name: str, results: tuple) -> None:
-        with open(f"results/{name}.json", "w") as file:
+        with open(f"{name}.json", "w") as file:
             data = {
                 "parametres": results[0],
                 "result": results[1],
@@ -82,17 +83,18 @@ class Research:
         clfs: dict = None,
         clusters: dict = None,
         descriptors: dict = None,
-        n_clusters: dict = None
+        n_clusters: dict = None,
+        quality_image: str = "low"
     ):
-        Research.add_train_dataset(percentage=40, scale=True, resolution="high")
+        Research.add_train_dataset(percentage=100, scale=True, resolution=quality_image)
 
         for name_clf, clf in clfs.items():
             for name_cluster, cluster in clusters.items():
                 for name_descriptor, descriptor in descriptors.items():
                     print(f"{name_clf}_{name_cluster}_{name_descriptor}")
-                    if not f"{name_clf}_{name_cluster}_{name_descriptor}.json" in os.listdir("results"):
+                    if not f"{name_clf}_{name_cluster}_{name_descriptor}.json" in os.listdir(f"results"):
                         Research.safe(
-                            f"{name_clf}_{name_cluster}_{name_descriptor}",
+                            f"results\\{name_clf}_{name_cluster}_{name_descriptor}",
                             Research.test(
                                 Research.train(
                                     clf=clf,

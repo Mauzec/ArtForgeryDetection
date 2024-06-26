@@ -3,6 +3,8 @@ import shutil
 import cv2
 import random
 from platform import platform as pf
+from PIL import Image
+
 is_win = pf().startswith('Win')
 
 PATH = "C:\\home_screen\\programming\\algoritm and data structure\\Dataset" if is_win else "/Users/maus/Downloads/images"
@@ -55,7 +57,8 @@ class DatasetOperations:
         
     @staticmethod
     def get_work_train_dataset(PATH: str=PATH,
-                               percentage_train: int=50) -> None:
+                               percentage_train: int=50,
+                               ) -> None:
         if not os.path.isdir(PATH):
             raise NameError("No such directory " + PATH)
         
@@ -121,9 +124,6 @@ class DatasetOperations:
         image = cv2.imread(image_path, 0)
         image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
         height, width = image.shape
-        new_width = min(500, width)
-        new_height = int(new_width * (height / width))
-        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
         isWritten = cv2.imwrite(image_path, image)
         return image_path
     
@@ -159,4 +159,21 @@ class DatasetOperations:
 
                 for file_path in dataset[for_using]:
                     shutil.copy(file_path, using_path)
+                    
+    @staticmethod
+    def resize_dataset():
+        for for_using in ['train', 'test']:
+            for type_artist in os.listdir(f"{cwd}\\dataset\\{for_using}"):
+                for image in os.listdir(f"{cwd}\\dataset\\{for_using}\\{type_artist}"):
+                    DatasetOperations.resize_image(f"{cwd}\\dataset\\{for_using}\\{type_artist}\\{image}")
+    
+    @staticmethod
+    def resize_image(image_path: str, new_width: int = 308):
+        original_image = Image.open(image_path)
+        width, height = original_image.size
+
+        new_height = int(height * (new_width / width))
+
+        resized_image = original_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        resized_image.save(image_path)
                                 

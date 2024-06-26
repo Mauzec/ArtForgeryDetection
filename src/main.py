@@ -56,19 +56,23 @@ clusters = {
 }
 
 n_clusters = {
-    "ORB": 500,
-    "AKAZE": 500,
-    "Resnet": 500,
-    "SIFT" : 500,
+    "FACE": 60
 }
 descriptors = {
-    "ORB": ORB(),
-    "AKAZE": AKAZE(),
-    "Resnet": Resnet(resnet_path=cfg['Victor']['Resnet']),
-    "SIFT" : SIFT(cfg['Victor']['SIFT']),
+    "FACE": FACE(
+        predictor_path=cfg['Victor']['FACE']['PREDICTOR'],
+        recognition_path=cfg['Victor']['FACE']['RECOGNITION']
+    )
 }
 
 
 if __name__ == "__main__":
-    DatasetOperations.clear()
+    
+    Research.testing(
+        clfs=clfs,
+        clusters=clusters,
+        descriptors=descriptors,
+        n_clusters=n_clusters,
+        quality_image="low"
+    )
     
