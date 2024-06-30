@@ -28,8 +28,9 @@ class Research:
         DatasetOperations.get_work_train_dataset(PATH=PATH, percentage_train=percentage)
         DatasetOperations.get_mona_test(PATH=PATH, resolution=resolution)
         
-        DatasetOperations.resize_dataset()
-        if scale: DatasetOperations.scale_all()
+        if scale:
+            DatasetOperations.resize_dataset()
+            DatasetOperations.scale_all()
         
     @staticmethod
     def train(
@@ -84,9 +85,10 @@ class Research:
         clusters: dict = None,
         descriptors: dict = None,
         n_clusters: dict = None,
-        quality_image: str = "low"
+        quality_image: str = "low",
+        scale: bool = True
     ):
-        Research.add_train_dataset(percentage=100, scale=True, resolution=quality_image)
+        Research.add_train_dataset(percentage=100, scale=scale, resolution=quality_image)
 
         for name_clf, clf in clfs.items():
             for name_cluster, cluster in clusters.items():

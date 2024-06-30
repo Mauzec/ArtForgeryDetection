@@ -1,3 +1,0 @@
-Статьи, которые нашел и могут быть интересны:
-https://www.researchgate.net/publication/378798562_Combining_bag_of_visual_words-based_features_with_CNN_in_image_classification
-https://gallerix.ru (сайт, с которого собраны картины)

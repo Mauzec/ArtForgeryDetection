@@ -1,1 +1,0 @@
-{"parametres": {"descriptor": "AKAZE", "number words": "200", "clf": "GradientBoostingClassifier()", "cluster": "MiniBatchKMeans(n_clusters=200)", "scale": "False"}, "result": ["artist", "other_artist", "other_artist", "other_artist", "other_artist", "other_artist"], "testing": {"accurancy": 1.0, "accurancy first class": 1.0, "accurancy second class": 1.0}}

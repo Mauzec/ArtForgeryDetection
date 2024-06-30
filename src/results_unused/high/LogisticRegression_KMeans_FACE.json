@@ -1,1 +1,0 @@
-{"parametres": {"descriptor": "FACE", "number words": "40", "clf": "LogisticRegression(max_iter=300, solver='saga')", "cluster": "KMeans(algorithm='elkan', n_clusters=40)", "scale": "False"}, "result": ["artist", "other_artist", "artist"], "testing": {"accurancy": 0.6666666666666666, "accurancy first class": 1.0, "accurancy second class": 0.5}}
