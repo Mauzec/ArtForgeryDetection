@@ -1,9 +1,9 @@
 Victor:
-  Dataset: "C:\\home_screen\\programming\\algoritm and data structure\\Dataset"
-  SIFT: "CustomDescriptors\\SiftDescriptor\\main.exe"
+  Dataset: ""
+  SIFT: "CustomDescriptors/SiftDescriptor/main"
   FACE: 
-    PREDICTOR: "CustomDescriptors\\FaceDescriptor\\shape_predictor_68_face_landmarks.dat"
-    RECOGNITION: "CustomDescriptors\\FaceDescriptor\\dlib_face_recognition_resnet_model_v1.dat"
-  Test: "dataset\\test"
-  Train: "dataset\\train"
-  Resnet: "CustomDescriptors\\ResnetDescriptor"
+    PREDICTOR: "CustomDescriptors/FaceDescriptor/shape_predictor_68_face_landmarks.dat"
+    RECOGNITION: "CustomDescriptors/FaceDescriptor/dlib_face_recognition_resnet_model_v1.dat"
+  Test: "dataset/test"
+  Train: "dataset/train"
+  Resnet: "CustomDescriptors/ResnetDescriptor"

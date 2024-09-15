@@ -9,7 +9,7 @@ class SIFT(ABSDescriptor):
         if not entry_path:
             ValueError("enter the entry path")
             
-        self.entry_path = f".\{entry_path}"
+        self.entry_path = f"./{entry_path}"
         
     def compute(self, image_path: str, index_process: int = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
         ''' Search keypoints and descriptors. 
