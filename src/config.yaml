@@ -1,9 +1,12 @@
 Victor:
-  Dataset: ""
+  Dataset: 
+    Input: "/home/victor/projects/Dataset/ArtForgeryDetection"
+    Output:
+      Test: "Data/test"
+      Train: "Data/train"
+      
   SIFT: "CustomDescriptors/SiftDescriptor/main"
   FACE: 
     PREDICTOR: "CustomDescriptors/FaceDescriptor/shape_predictor_68_face_landmarks.dat"
     RECOGNITION: "CustomDescriptors/FaceDescriptor/dlib_face_recognition_resnet_model_v1.dat"
-  Test: "dataset/test"
-  Train: "dataset/train"
   Resnet: "CustomDescriptors/ResnetDescriptor"

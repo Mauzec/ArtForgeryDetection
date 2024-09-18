@@ -4,9 +4,11 @@ import cv2
 from numpy.typing import NDArray
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import TransformerMixin, BaseEstimator, ClassifierMixin
+from sklearn.metrics import accuracy_score
 from joblib import dump, load
 from CustomDescriptors.abstract.abstract import ABSDescriptor
-from helper.Multiprocessor import Multiprocessor
+from Helper.Multiprocessor import Multiprocessor
+from typing import FunctionType
 
 
 class BoVW(ClassifierMixin, BaseEstimator):
@@ -65,6 +67,14 @@ class BoVW(ClassifierMixin, BaseEstimator):
         test_features = self._stdslr.transform(test_features)
             
         return self._clf.predict(test_features)
+    
+    def score(self,
+              X: list,
+              y: list,
+              score = accuracy_score
+              ) -> None:
+        
+        return score(y, self.predict(X))
         
     
     def _get_list(self, image_paths: list, func) -> list:
