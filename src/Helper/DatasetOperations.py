@@ -3,7 +3,6 @@ import shutil
 import os
 import cv2
 from sklearn.model_selection import train_test_split
-from typing import FunctionType
     
 class DataOperations:
     
@@ -16,9 +15,9 @@ class DataOperations:
                 "Data": cfg["Dataset"]["Input"],
                 "Train": cfg["Dataset"]["Output"]["Train"],
                 "Test": cfg["Dataset"]["Output"]["Test"]}
-        self._isDir()
+        self.__isDir()
     
-    def _isDir(self,
+    def __isDir(self,
                isClear: bool = False,
                ) -> bool:
         if not os.path.isdir(self.Dirs["Data"]):
@@ -28,28 +27,31 @@ class DataOperations:
                 if not isClear: Warning(f"{typeData} directory was not created earlier")
                 os.makedirs(self.Dirs[typeData])
     
-    def _makeDirs(self,
+    def __makeDirs(self,
                   nameDirs: list,
                   typeData: str = ["Train", "Test"]) -> None:
         for nameDir in nameDirs:
-            if not os.path.isdir(self.Dirs[typeData]):
+            if not os.path.isdir(f"{self.Dirs[typeData]}/{nameDir}"):
+                print(f"{self.Dirs[typeData]}/{nameDir}")
                 os.makedirs(f"{self.Dirs[typeData]}/{nameDir}")
     
-    def getData(self, contextKeys: str = ["TrainTest", "Split"]) -> FunctionType:
-        self.clearDirs()
+    def getData(self, contextKeys: str = ["TrainTest", "Split", "FitPredict"]):
         def getTrainTestData(artists: dict[list] = {"train": [], "test": []},
                             all: bool = False,
                             ) -> None:
             if all: 
-                artists["train"] = os.listdir(f"{self.Dirs["Data"]}/train")
-                artists["test"] = os.listdir(f"{self.Dirs["Data"]}/test")
+                artists["Train"] = os.listdir(f"{self.Dirs["Data"]}/Train")
+                artists["Test"] = os.listdir(f"{self.Dirs["Data"]}/Test")
         
-            for typeData in self.Dirs["Data"]: 
+            for typeData in ["Train", "Test"]: 
                 dirs = os.listdir(f"{self.Dirs["Data"]}/{typeData}")
-                for artist in f"{self.Dirs["Data"]}/{typeData}/{artists}":
+                for artist in artists[typeData]:
+                    artistDir = f"{self.Dirs["Data"]}/{typeData}/{artist}"
+                    print(artist)
                     if artist in dirs:
-                        for imageName in f"{dirs}/{artist}":
-                            shutil.copy(f"{dirs}/{artist}/{imageName}", self.Dirs[typeData])      
+                        self.__makeDirs([artist], typeData=typeData)
+                        for imageName in os.listdir(artistDir):
+                            shutil.copy(f"{artistDir}/{imageName}", f"{self.Dirs[typeData]}/{artist}")      
                     else:
                         Warning(f"{artist} is not found in {typeData}")
                         
@@ -59,7 +61,7 @@ class DataOperations:
             ImagePaths = dict()
             artistNames = os.listdir(self.Dirs["Data"])
             for artistName in artistNames:
-                ImagePaths[artistName] = os.listdir(f"{artistNames}/{artistName}")
+                ImagePaths[artistName] = os.listdir(f"{self.Dirs["Data"]}/{artistName}")
                 
             TrainTestData = dict()
             for artistName in artistNames:
@@ -69,8 +71,8 @@ class DataOperations:
                                             )
                 TrainTestData[artistName] = {"Train": train, "Test": test}
                 
-            self._makeDirs(artistNames, "Train")
-            self._makeDirs(artistNames, "Test")
+            self.__makeDirs(artistNames, "Train")
+            self.__makeDirs(artistNames, "Test")
             
             for typeData in ["Test", "Train"]:    
                 for artistName in artistNames:
@@ -78,10 +80,26 @@ class DataOperations:
                         shutil.copy(f"{self.Dirs["Data"]}/{artistName}/{imageName}",
                                     f"{self.Dirs[typeData]}/{artistName}"
                                     )
+                        
+        def getFitPredictData() -> dict:
+            Data = dict.fromkeys(["Train", "Test"], None)
+            for typeData in ["Train", "Test"]:
+                imageNames = list()
+                classImages = list()
+                for artistName in os.listdir(self.Dirs[typeData]):
+                    for imageName in os.listdir(f"{self.Dirs[typeData]}/{artistName}"):
+                        imageNames.append(f"{self.Dirs[typeData]}/{artistName}/{imageName}")
+                        classImages.append(artistName)
+                        
+                Data[typeData] = (imageNames, classImages)
+                        
+            return Data
+            
         
         contextFunction = {
             "TrainTest": getTrainTestData,
-            "Split": getAndSplitData
+            "Split": getAndSplitData,
+            "FitPredict": getFitPredictData
         }
         return contextFunction[contextKeys]
                     
@@ -91,21 +109,21 @@ class DataOperations:
                    ) -> None:
         if isTrain: shutil.rmtree(self.Dirs["Train"])
         if isTest: shutil.rmtree(self.Dirs["Test"])
-        self._isDir(isClear=True)
+        self.__isDir(isClear=True)
         
     def scaleImage(self,
                    imagePath: str,
                    scaleFunctions: list = [cv2.GaussianBlur],
-                   args: list = [(5,5)],
+                   args: list = [[(5,5)]],
                    kwargs: list = [{"sigmaX": 36, "sigmaY": 36}],
                    ) -> None:
         
         image =  cv2.imread(imagePath, 0)
         
         for idx, scaleFunction in enumerate(scaleFunctions):
-            image = scaleFunction(image, **args[idx], **kwargs[idx])
+            image = scaleFunction(image, *args[idx], **kwargs[idx])
             
-        isWritten = cv2.imwrite(imagePath, image)            
+        isWritten = cv2.imwrite(imagePath, image)         
 
                     
     

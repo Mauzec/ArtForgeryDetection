@@ -1,9 +1,9 @@
 Victor:
   Dataset: 
-    Input: "/home/victor/projects/Dataset/ArtForgeryDetection"
+    Input: "/home/victor/projects/Dataset/ArtForgeryDetection/Split"
     Output:
-      Test: "Data/test"
-      Train: "Data/train"
+      Test: "Data/Test"
+      Train: "Data/Train"
       
   SIFT: "CustomDescriptors/SiftDescriptor/main"
   FACE: 

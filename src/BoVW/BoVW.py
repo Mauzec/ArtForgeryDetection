@@ -8,7 +8,6 @@ from sklearn.metrics import accuracy_score
 from joblib import dump, load
 from CustomDescriptors.abstract.abstract import ABSDescriptor
 from Helper.Multiprocessor import Multiprocessor
-from typing import FunctionType
 
 
 class BoVW(ClassifierMixin, BaseEstimator):
@@ -28,7 +27,7 @@ class BoVW(ClassifierMixin, BaseEstimator):
         self._cluster = cluster
         self.labels_ = None
         
-        self._mp = Multiprocessor(NUM_PROCESS=2)
+        self._mp = Multiprocessor(NUM_PROCESS=8)
         
     def fit(self, X: list, y: list) -> None:
         X = self._get_list(X, self._get_gray_image_path)
@@ -49,7 +48,6 @@ class BoVW(ClassifierMixin, BaseEstimator):
         descriptors = descriptors.astype(np.float64)
         
         self._cluster.fit(descriptors)
-        
         image_features = self._get_list(descriptor_list, self._get_image_feature)
         
         self._stdslr.fit(image_features)
@@ -60,10 +58,11 @@ class BoVW(ClassifierMixin, BaseEstimator):
         
       
     def predict(self, X: list) -> NDArray:
-          
         descriptor_list_test = self._get_list(X, self._get_descriptor)
-            
-        test_features = self._get_list(descriptor_list_test, self._get_image_feature)
+        
+        test_features = image_features = np.array(
+            [self._get_image_feature(descriptor, -1) for descriptor in descriptor_list_test]
+        )
         test_features = self._stdslr.transform(test_features)
             
         return self._clf.predict(test_features)
@@ -77,19 +76,19 @@ class BoVW(ClassifierMixin, BaseEstimator):
         return score(y, self.predict(X))
         
     
-    def _get_list(self, image_paths: list, func) -> list:
-        return self._mp.run(image_paths, func)
+    def _get_list(self, input_data: list, func) -> list:
+        return self._mp.run(input_data, func)
     
-    def _get_descriptor(self, image_paths: NDArray, index_process: int) -> tuple[str, np.ndarray]:
-        _, descriptor = self._descriptor.compute(image_paths, index_process=index_process)
+    def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
+        _, descriptor = self._descriptor.compute(image_path, index_process=index_process)
         return np.array(descriptor, dtype=np.float64)     
     
-    def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
+    def _get_image_feature(self, descriptor: NDArray, index_process: int) -> tuple[np.ndarray, int]:
+        print(index_process)
         image_feature = np.zeros(self._number_words, dtype=np.float64)
         words = self._cluster.predict(descriptor)
         for w in words:
             image_feature[w] += 1 
-
         return image_feature
     
     def _get_gray_image_path(self, image_path: str, index_process: int) -> str:
