@@ -14,18 +14,22 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)["Victor"]
         
     bovw = BoVW(
-        descriptor=SIFT(cfg["SIFT"]),
-        number_words=50,
-        clf=LinearSVC(max_iter = 800),
-        cluster=KMeans(n_clusters = 50)
+        descriptor=ORB(),
+        number_words=200,
+        clf=LinearSVC(max_iter = 8000),
+        cluster=KMeans(n_clusters = 200)
     )
     
     operations = DataOperations("Victor")
     operations.clearDirs()
     operations.getData("Split")(0.2)
-    Data = operations.getData("FitPredict")()
+    Data = operations.getData("FitPredict")(encoded=True)
     train, test = Data["Train"], Data["Test"]
+    X_train, y_train = train[0], train[1]
+    X_test, y_test = test[0], test[1]
     
-    bovw.fit(*train)
+    bovw.fit(X_train, y_train)
+    print("train:", bovw.score(X_train, y_train))
+    print("test:", bovw.score(X_test, y_test))
     
     # бля, я в ахуе с результатов, это пиздец какой-то

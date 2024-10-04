@@ -1,6 +1,6 @@
 Victor:
   Dataset: 
-    Input: "/home/victor/projects/Dataset/ArtForgeryDetection/Split"
+    Input: "/home/victor/Datasets/ArtForgeryDetection/Split"
     Output:
       Test: "Data/Test"
       Train: "Data/Train"

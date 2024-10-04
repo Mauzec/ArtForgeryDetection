@@ -7,7 +7,7 @@ from sklearn.base import TransformerMixin, BaseEstimator, ClassifierMixin
 from sklearn.metrics import accuracy_score
 from joblib import dump, load
 from CustomDescriptors.abstract.abstract import ABSDescriptor
-from Helper.Multiprocessor import Multiprocessor
+import multiprocessing as mp
 
 
 class BoVW(ClassifierMixin, BaseEstimator):
@@ -17,6 +17,8 @@ class BoVW(ClassifierMixin, BaseEstimator):
                  clf: ClassifierMixin,
                  cluster: TransformerMixin,
                  stdslr: TransformerMixin = StandardScaler(),
+                 num_proceses: int = 8,
+                 batch_size: int = 50
                  ) -> None:
         
         self._descriptor = descriptor
@@ -27,7 +29,8 @@ class BoVW(ClassifierMixin, BaseEstimator):
         self._cluster = cluster
         self.labels_ = None
         
-        self._mp = Multiprocessor(NUM_PROCESS=8)
+        self.num_proceses = num_proceses
+        self.batch_size = batch_size
         
     def fit(self, X: list, y: list) -> None:
         X = self._get_list(X, self._get_gray_image_path)
@@ -42,13 +45,25 @@ class BoVW(ClassifierMixin, BaseEstimator):
                 
             k += 1
         
+        limits = [0]
+        for idx, descriptor in enumerate(descriptor_list):
+            limits.append(limits[idx] + len(descriptor))
+        
         descriptors = descriptor_list[0]
         for descriptor in descriptor_list[1:]:
             descriptors = np.vstack((descriptors, descriptor))  
         descriptors = descriptors.astype(np.float64)
         
-        self._cluster.fit(descriptors)
-        image_features = self._get_list(descriptor_list, self._get_image_feature)
+        
+        words = self._cluster.fit_predict(descriptors)
+        image_features = list()
+        for idx, limit in enumerate(limits[1:]):
+            image_words = words[limits[idx]: limit]
+            image_feature = np.zeros(self._number_words, dtype=np.float64)
+            for word in image_words:
+                image_feature[word] += 1
+                
+            image_features.append(image_feature) 
         
         self._stdslr.fit(image_features)
         image_features=self._stdslr.transform(image_features)
@@ -58,14 +73,13 @@ class BoVW(ClassifierMixin, BaseEstimator):
         
       
     def predict(self, X: list) -> NDArray:
-        descriptor_list_test = self._get_list(X, self._get_descriptor)
+        descriptor_list = self._get_list(X, self._get_descriptor)
         
-        test_features = image_features = np.array(
-            [self._get_image_feature(descriptor, -1) for descriptor in descriptor_list_test]
-        )
-        test_features = self._stdslr.transform(test_features)
+        image_features = self._get_list(descriptor_list, self._get_image_feature)
+        
+        image_features = self._stdslr.transform(image_features)
             
-        return self._clf.predict(test_features)
+        return self._clf.predict(image_features)
     
     def score(self,
               X: list,
@@ -76,25 +90,68 @@ class BoVW(ClassifierMixin, BaseEstimator):
         return score(y, self.predict(X))
         
     
-    def _get_list(self, input_data: list, func) -> list:
-        return self._mp.run(input_data, func)
-    
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
+        print("get_descriptor", index_process)
         _, descriptor = self._descriptor.compute(image_path, index_process=index_process)
         return np.array(descriptor, dtype=np.float64)     
     
     def _get_image_feature(self, descriptor: NDArray, index_process: int) -> tuple[np.ndarray, int]:
-        print(index_process)
+        print("get_image_feature", index_process)
         image_feature = np.zeros(self._number_words, dtype=np.float64)
-        words = self._cluster.predict(descriptor)
-        for w in words:
-            image_feature[w] += 1 
+        for i in range(0, descriptor.shape[0], self.batch_size):
+            batch = descriptor[i:i+self.batch_size]
+            words = self._cluster.predict(batch)
+            for w in words:
+                image_feature[w] += 1 
+    
         return image_feature
     
     def _get_gray_image_path(self, image_path: str, index_process: int) -> str:
+        print("get_gray_image_path", index_process)
         image = cv2.imread(image_path, 0)
         cv2.imwrite(image_path, image)
         return image_path
+    
+    def _get_list(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
+        new_data = [None] * len(data)
+        input_queue = mp.Queue()
+        output_queue = mp.Queue()
+        processes = [
+            mp.Process(target=self._calculate, 
+                       args=(input_queue, output_queue, function, i + 1), daemon=True)
+            for i in range(self.num_proceses)
+            ]
+        
+        for key, element in enumerate(data):
+            input_queue.put((key, element))
+        
+        for process in processes:
+            process.start()
+            
+        k = 0   
+        key = None
+        element = None
+        while k < len(data):
+            if not output_queue.empty():
+                key, element = output_queue.get()
+                new_data[key] = element
+                k += 1
+            
+        for process in processes:
+            process.terminate()
+            
+        return new_data
+    
+    def _calculate(self,
+                   input_queue: mp.Queue,
+                   output_queue: mp.Queue,
+                   function, index_process: int) -> None:
+        
+        while True:
+            if not input_queue.empty():
+                key, input_data = input_queue.get()
+                output_data = function(input_data, index_process)
+                output_queue.put((key, output_data))
     
     def get_params(self) -> str:
         return {

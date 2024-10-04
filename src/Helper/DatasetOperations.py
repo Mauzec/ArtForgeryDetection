@@ -47,7 +47,6 @@ class DataOperations:
                 dirs = os.listdir(f"{self.Dirs["Data"]}/{typeData}")
                 for artist in artists[typeData]:
                     artistDir = f"{self.Dirs["Data"]}/{typeData}/{artist}"
-                    print(artist)
                     if artist in dirs:
                         self.__makeDirs([artist], typeData=typeData)
                         for imageName in os.listdir(artistDir):
@@ -81,7 +80,7 @@ class DataOperations:
                                     f"{self.Dirs[typeData]}/{artistName}"
                                     )
                         
-        def getFitPredictData() -> dict:
+        def getFitPredictData(encoded: bool = False) -> dict:
             Data = dict.fromkeys(["Train", "Test"], None)
             for typeData in ["Train", "Test"]:
                 imageNames = list()
@@ -92,7 +91,17 @@ class DataOperations:
                         classImages.append(artistName)
                         
                 Data[typeData] = (imageNames, classImages)
-                        
+
+            if encoded:
+                classes =  set(Data["Train"][1] + Data["Test"][1])
+                encoder = dict.fromkeys(classes)
+                for idx, key in enumerate(classes):
+                    encoder[key] = idx
+                    
+                for typeData in ["Train", "Test"]:
+                    for idx in range(len(Data[typeData][1])):
+                        Data[typeData][1][idx] = encoder[Data[typeData][1][idx]]
+                           
             return Data
             
         
