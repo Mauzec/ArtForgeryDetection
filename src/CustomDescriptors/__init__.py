@@ -1,0 +1,8 @@
+from CustomDescriptors.OrbDescriptor.ORB import ORB
+from CustomDescriptors.SiftDescriptor.SIFT import SIFT
+from CustomDescriptors.ResnetDescriptor.Resnet import Resnet
+from CustomDescriptors.AkazeDescriptor.AKAZE import AKAZE
+from CustomDescriptors.FaceDescriptor.FACE import FACE
+from CustomDescriptors.CompineDescriptor.CompineDescriptor import Combine
+from CustomDescriptors.ImageDescriptors.LBPDescriptor import LBP
+from CustomDescriptors.abstract.abstract import ABSDescriptor, ABSImageDescriptor

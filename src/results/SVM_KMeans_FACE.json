@@ -1,1 +1,0 @@
-{"parametres": {"descriptor": "FACE", "number words": "60", "clf": "LinearSVC(max_iter=8000)", "cluster": "KMeans(algorithm='elkan', n_clusters=60)", "scale": "False"}, "result": ["artist", "artist", "artist", "artist", "other_artist", "artist", "artist", "artist"], "testing": {"accurancy": 0.25, "accurancy first class": 1.0, "accurancy second class": 0.14285714285714285}}

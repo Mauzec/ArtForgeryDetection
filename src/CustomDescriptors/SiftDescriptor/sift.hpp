@@ -10,6 +10,7 @@
 #include <tuple>
 #include <cassert>
 #include <cstdint>
+#include <iomanip> 
 using namespace std;
 
 #include "image.hpp"

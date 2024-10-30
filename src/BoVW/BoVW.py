@@ -1,264 +1,140 @@
-import cv2
 import numpy as np
-import os
-import matplotlib.pyplot as plt
-import multiprocessing as mp
-from random import choice
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import LinearSVC
-from joblib import dump, load
 import json
-from CustomDescriptors.SiftDescriptor import SIFT
+import cv2
+from numpy.typing import NDArray
+from sklearn.preprocessing import StandardScaler
+from sklearn.base import TransformerMixin, BaseEstimator, ClassifierMixin
+from sklearn.metrics import accuracy_score
+from joblib import dump, load
+from CustomDescriptors.abstract.abstract import ABSDescriptor
+import multiprocessing as mp
 
-NUM_PROCESS = 8
 
-class BoVW():
+class BoVW(ClassifierMixin, BaseEstimator):
     def __init__(self,
-                 descriptor = SIFT,
-                 code_book = np.ndarray(shape=0),
-                 number_words = 200,
-                 clf = LinearSVC(max_iter=80000),
-                 cluster = KMeans(n_clusters=200),
-                 scale: bool=False) -> None:
+                 descriptor: ABSDescriptor,
+                 number_words: int,
+                 clf: ClassifierMixin,
+                 cluster: TransformerMixin,
+                 stdslr: TransformerMixin = StandardScaler(),
+                 num_proceses: int = 8,
+                 batch_size: int = 50,
+                 isColor: bool = True
+                 ) -> None:
         
         self._descriptor = descriptor
-        self._image_paths = []
         self._dataset = []
-        self._image_classes = []
-        self._code_book = code_book
         self._number_words = number_words
-        self._stdslr = StandardScaler()
+        self._stdslr = stdslr
         self._clf = clf
         self._cluster = cluster
-        self._class_names = []
-        self._scale = scale
         
-    def add_train_dataset(self, path: str) -> None:
+        self.labels_ = None
         
-        if not os.path.isdir(path):
-            raise NameError("No such directory " + path)
+        self._isColor = isColor
+        self.num_proceses = num_proceses
+        self.batch_size = batch_size
         
-        self._class_names = os.listdir(path)
-        
-        for k, name in enumerate(self._class_names): 
-            directory = os.path.join(path, name)
-            class_path = [os.path.join(directory,f) for f in os.listdir(directory)]
-            was_len = len(self._image_paths)
-            self._image_paths += class_path
-            self._image_classes += [k] * (len(self._image_paths) - was_len)
+    def fit(self, X: list, y: list) -> None:
+        print("start fit")
+        if not self._isColor:
+            X = self._get_list(X, self._get_gray_image_path)
             
-        for i in range(len(self._image_paths)):
-            self._dataset.append((self._image_paths[i], self._image_classes[i]))
-        
-    def model_training(self) -> None:
-        descriptor_list = self._get_descriptor_list()
-        
+        descriptor_list = self._get_list(X, self._get_descriptor)
+        print("descriptor list is")
         k = 0
         while k < len(descriptor_list):
-            if descriptor_list[k][1].shape[0] == 0:
+            if descriptor_list[k].shape[0] == 0:
                 descriptor_list.pop(k)
-                self._image_classes.pop(k)
+                y.pop(k)
                 k -= 1
                 
             k += 1
-        
-        descriptors = descriptor_list[0][1]
-        
-
-        for _, descriptor in descriptor_list[1:]:
-            descriptors = np.vstack((descriptors, descriptor))
             
+        self._image_classes = list(set(y))
+        
+        limits = [0]
+        for idx, descriptor in enumerate(descriptor_list):
+            limits.append(limits[idx] + len(descriptor))
+        
+        descriptors = descriptor_list[0]
+        for descriptor in descriptor_list[1:]:
+            descriptors = np.vstack((descriptors, descriptor))  
         descriptors = descriptors.astype(np.float64)
         
-        self._code_book = self._cluster.fit_predict(descriptors)
         
-        image_features = self._get_image_features(descriptor_list)
+        words = self._cluster.fit_predict(descriptors)
+        print("words list is got")
+        image_features = list()
+        for idx, limit in enumerate(limits[1:]):
+            image_words = words[limits[idx]: limit]
+            image_feature = np.zeros(self._number_words, dtype=np.float64)
+            for word in image_words:
+                image_feature[word] += 1
+                
+            image_features.append(image_feature) 
         
         self._stdslr.fit(image_features)
-        image_features=self._stdslr.transform(image_features)
-        
-        self._clf.fit(image_features, np.array(self._image_classes))
-        
+        image_features = self._stdslr.transform(image_features)
+        print("image features list is got")
+        self._clf.fit(image_features, y)
+        self.labels_ = self._clf.predict(image_features)
+        print("classifier is fitted")
       
-    def testing(self, path_tests: str) -> float:
-        self.clear_dataset()
-        self.add_train_dataset(path_tests)
-          
-        descriptor_list_test = self._get_descriptor_list()
+    def predict(self, X: list) -> NDArray:
+        print("start predict")
+        descriptor_list = self._get_list(X, self._get_descriptor)
+        
+        image_features = self._get_list(descriptor_list, self._get_image_feature)
+        
+        image_features = self._stdslr.transform(image_features)
             
-        test_features = self._get_image_features(descriptor_list_test)
-        test_features = self._stdslr.transform(test_features)
-
-        true_classes = []
-        count_in_class = [0] * len(self._image_classes)
-        for k in self._image_classes:
-            true_classes.append(k)
-            count_in_class[k] += 1
-            
-        predict_classes=[]
-        for k in self._clf.predict(test_features):
-            predict_classes.append(k)
-        
-        right_class = [0] * len(self._image_classes)
-        for k in range(len(predict_classes)):
-            if predict_classes[k] == true_classes[k]:
-                right_class[true_classes[k]] += 1
-                
-        accuracy = sum(right_class) / len(true_classes)
-        accuracy_c1 = right_class[0] / count_in_class[0] if count_in_class[0] > 0 else 1.0
-        accuracy_c2 = right_class[1] / count_in_class[1] if count_in_class[1] > 0 else 1.0
-        
-        return {
-            "accurancy": accuracy,
-            "accurancy first class": accuracy_c1,
-            "accurancy second class": accuracy_c2
-        }
-        
-    def clear_dataset(self) -> None:
-        self._image_paths = []
-        self._dataset = []
-        self._image_classes = []
-        self._image_classes_name = []
-        
-    def classification_image(self, image_path: str) -> str:
-        if not os.path.isfile(image_path):
-            return ("no file", -1)
-        descriptor = self._get_descriptor(image_path, -1)
-        feature = np.array([self._get_image_feature(descriptor, -1)])
-        feature = self._stdslr.transform(feature)
-        
-        predicted_class = self._clf.predict(feature)[0]
-        
-
-        return self._class_names[predicted_class]
+        return self._clf.predict(image_features)
     
-    def _get_descriptor_list(self) -> list:
-        descriptor_list = self._parallel_function(self._image_paths, self._get_descriptor)
-        for k, descriptor in enumerate(descriptor_list):
-            descriptor_list[k] = [self._image_classes[k], descriptor]
-        return descriptor_list
-    
+    def score(self,
+              X: list,
+              y: list,
+              score = accuracy_score
+              ) -> None:
+        return score(y, self.predict(X))
+        
     def _get_descriptor(self, image_path: str, index_process: int) -> tuple[str, np.ndarray]:
-        image = self._image(image_path)
-        _, descriptor = self._descriptor.compute(image, index_process=index_process)
-        return np.array(descriptor, dtype=np.float64)
+        print("get_descriptor", index_process)
+        _, descriptor = self._descriptor.compute(image_path, index_process=index_process)
+        return np.array(descriptor, dtype=np.float64)     
     
-    def _get_image_features(self, descriptor_list: list) -> np.ndarray:
-        image_features=np.zeros((len(self._image_paths), self._number_words),"float32")
-        image_features = self._parallel_function([x[1] for x in descriptor_list], self._get_image_feature)       
-        return image_features
-    
-    def _get_image_feature(self, descriptor: np.ndarray, index_process: int) -> tuple[np.ndarray, int]:
+    def _get_image_feature(self, descriptor: NDArray, index_process: int) -> tuple[np.ndarray, int]:
+        print("get_image_feature", index_process)
         image_feature = np.zeros(self._number_words, dtype=np.float64)
-        words = self._cluster.predict(descriptor)
-        for w in words:
-            image_feature[w] += 1 
-
+        for i in range(0, descriptor.shape[0], self.batch_size):
+            batch = descriptor[i:i+self.batch_size]
+            words = self._cluster.predict(batch)
+            for w in words:
+                image_feature[w] += 1 
+    
         return image_feature
     
-    @property
-    def classes(self) -> dict:
-        classes = dict()
-        for k, name in enumerate(self._class_names):
-            classes[name] = k
-            
-        return classes
-    
-    @property
-    def dataset(self) -> dict:
-        size_classes = dict.fromkeys(self._class_names, 0)
-        for k in self._image_classes:
-            size_classes[self._class_names[k]] += 1
-        
-        dataset = {
-            "size": len(self._image_paths),
-            "size classes": size_classes,
-            "words": self._number_words, 
-        }
-        
-        return dataset
-    
-    @property
-    def example(self) -> None:
-        image_path = choice(self._image_paths)
-        image = self._image(image_path)
-        keypoints, _ = self._descriptor.compute(image, index_process = -1)
-        for keypoint in keypoints:
-            x, y = keypoint
-            plt.imshow(cv2.circle(image, (int(x), int(y)), 5, (255, 255, 255)))
-            
-        plt.savefig("example")
-        
-    @property
-    def parametres(self) -> str:
-        return {
-    "descriptor": f"{self._descriptor}",
-    "number words": f"{self._number_words}",
-    "clf": f"{self._clf}",
-    "cluster": f"{self._cluster}",
-    "scale": f"{self._scale}"
-        }
-        
-    def _image(self, image_path: cv2.typing.MatLike) -> cv2.typing.MatLike:
-        if self._scale:
-            image = cv2.imread(image_path, 0)
-            image = cv2.GaussianBlur(image, (5,5), sigmaX=36, sigmaY=36)
-            height, width = image.shape
-            new_width = min(500, width)
-            new_height = int(new_width * (height / width))
-            image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
-            isWritten = cv2.imwrite(image_path, image)
+    def _get_gray_image_path(self, image_path: str, index_process: int) -> str:
+        print("get_gray_image_path", index_process)
+        image = cv2.imread(image_path, 0)
+        cv2.imwrite(image_path, image)
         return image_path
     
-    def save_model(self,
-                   directory: str, name_model = 'modelSVM.jolib',
-                   name_classes = "name_classes.json",
-                   name_scaler = 'std_scaler.joblib',
-                   name_code_book = 'code_book_file_name.npy',
-                   name_cluster  ="cluster.jolib") -> None:
-         
-        dump(self._clf, f"{directory}\\{name_model}", compress=True)
-        dump(self._stdslr, f"{directory}\\{name_scaler}", compress=True)
-        dump(self._cluster, f"{directory}\\{name_cluster}", compress=True)
-        np.save(f"{directory}\\{name_code_book}", self._code_book)
-        with open(f"{directory}\\{name_classes}", "w") as json_file:
-            data = {"names": self._class_names}
-            json.dump(data, json_file, ensure_ascii=False)
-            
-        print("model is saved")
-        
-    def download_model(self,
-                   directory: str, name_model = 'modelSVM.jolib',
-                   name_classes = "name_classes.json",
-                   name_scaler = 'std_scaler.joblib',
-                   name_code_book = 'code_book_file_name.npy',
-                   name_cluster  ="cluster.jolib") -> None:
-        
-        self._clf = load(f"{directory}\\{name_model}")
-        self._stdslr = load(f"{directory}\\{name_scaler}")
-        self._cluster = load(f"{directory}\\{name_cluster}")
-        self._code_book = np.load(f"{directory}\\{name_code_book}")
-        with open(f"{directory}\\{name_classes}", 'r') as json_file: 
-            self._class_names = json.load(json_file)["names"]
-            
-        print("model is downloaded")
-        
-    def _parallel_function(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
+    def _get_list(self, data, function) -> list: # в data может быть ndarray или list, в function - функция
         new_data = [None] * len(data)
         input_queue = mp.Queue()
         output_queue = mp.Queue()
         processes = [
-            mp.Process(target=self._daemon_function, 
+            mp.Process(target=self._calculate, 
                        args=(input_queue, output_queue, function, i + 1), daemon=True)
-            for i in range(NUM_PROCESS)
+            for i in range(self.num_proceses)
             ]
+        
+        for key, element in enumerate(data):
+            input_queue.put((key, element))
         
         for process in processes:
             process.start()
-            
-        for key, element in enumerate(data):
-            input_queue.put((key, element))
             
         k = 0   
         key = None
@@ -274,10 +150,53 @@ class BoVW():
             
         return new_data
     
-    def _daemon_function(self, input_queue: mp.Queue, output_queue: mp.Queue,
-                         function, index_process: int) -> None:
+    def _calculate(self,
+                   input_queue: mp.Queue,
+                   output_queue: mp.Queue,
+                   function, index_process: int) -> None:
+        
         while True:
             if not input_queue.empty():
                 key, input_data = input_queue.get()
                 output_data = function(input_data, index_process)
                 output_queue.put((key, output_data))
+    
+    def get_params(self) -> str:
+        return {
+            "descriptor": f"{self._descriptor}",
+            "number words": f"{self._number_words}",
+            "clf": f"{self._clf}",
+            "cluster": f"{self._cluster}",
+            "stdslr": f"{self._stdslr}",
+            }
+    
+    def save_model(self,
+                   directory: str,
+                   name_model = 'modelSVM.jolib',
+                   name_classes = "name_classes.json",
+                   name_scaler = 'std_scaler.joblib',
+                   name_cluster  ="cluster.jolib") -> None:
+         
+        dump(self._clf, f"{directory}/{name_model}", compress=True)
+        dump(self._stdslr, f"{directory}/{name_scaler}", compress=True)
+        dump(self._cluster, f"{directory}/{name_cluster}", compress=True)
+        with open(f"{directory}/{name_classes}", "w") as json_file:
+            data = {"names": self._class_names}
+            json.dump(data, json_file, ensure_ascii=False)
+            
+        print("model is saved")
+        
+    def download_model(self,
+                   directory: str,
+                   name_model = 'modelSVM.jolib',
+                   name_classes = "name_classes.json",
+                   name_scaler = 'std_scaler.joblib',
+                   name_cluster  ="cluster.jolib") -> None:
+        
+        self._clf = load(f"{directory}/{name_model}")
+        self._stdslr = load(f"{directory}/{name_scaler}")
+        self._cluster = load(f"{directory}/{name_cluster}")
+        with open(f"{directory}/{name_classes}", 'r') as json_file: 
+            self._class_names = json.load(json_file)["names"]
+            
+        print("model is downloaded")
