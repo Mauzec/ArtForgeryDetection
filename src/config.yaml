@@ -1,11 +1,10 @@
 Victor:
   Dataset: 
-    Input: "/home/victor/Datasets/ArtForgeryDetection/Split"
+    Input: "/home/victor/Datasets/ArtForgeryDetection"
     Output:
       Test: "Data/Test"
       Train: "Data/Train"
-      
-  SIFT: "CustomDescriptors/SiftDescriptor/main"
+      Inference: "Data/Inference"
   FACE: 
     PREDICTOR: "CustomDescriptors/FaceDescriptor/shape_predictor_68_face_landmarks.dat"
     RECOGNITION: "CustomDescriptors/FaceDescriptor/dlib_face_recognition_resnet_model_v1.dat"

@@ -1,0 +1,30 @@
+{
+    "X": [
+        "Data/Inference/Artist/original_2.jpg",
+        "Data/Inference/Artist/Saint-John-Baptist_original.jpg",
+        "Data/Inference/Artist/original_1.jpg",
+        "Data/Inference/Other-Artist/Saint-John-Baptist_copy_2.jpg",
+        "Data/Inference/Other-Artist/Saint-John-Baptist_copy_3.jpg",
+        "Data/Inference/Other-Artist/Saint-John-Baptist_copy_4.png",
+        "Data/Inference/Other-Artist/Saint-John-Baptist_copy_1.jpg"
+    ],
+    "y": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+    ],
+    "pred": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1
+    ],
+    "score": 0.5714285714285714
+}

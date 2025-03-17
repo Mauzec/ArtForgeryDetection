@@ -1,0 +1,30 @@
+{
+    "X": [
+        "Data/Inference/Artist/original_2.jpg",
+        "Data/Inference/Artist/original_1.jpg",
+        "Data/Inference/Artist/dama_gorn_original.jpg",
+        "Data/Inference/Other-Artist/dama_gorn_copy_2.png",
+        "Data/Inference/Other-Artist/dama_gorn_copy_3.jpg",
+        "Data/Inference/Other-Artist/dama_gorn_copy_4.jpg",
+        "Data/Inference/Other-Artist/dama_gorn_copy_1.png"
+    ],
+    "y": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+    ],
+    "pred": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+    ],
+    "score": 0.2857142857142857
+}

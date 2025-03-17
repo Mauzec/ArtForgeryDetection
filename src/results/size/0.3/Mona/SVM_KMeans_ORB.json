@@ -1,0 +1,42 @@
+{
+    "X": [
+        "Data/Inference/Artist/original_2.jpg",
+        "Data/Inference/Artist/Mona_original.jpg",
+        "Data/Inference/Artist/original_1.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_6.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_5.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_2.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_8.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_1.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_3.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_4.jpg",
+        "Data/Inference/Other-Artist/Mona_copy_7.jpg"
+    ],
+    "y": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+    ],
+    "pred": [
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+    ],
+    "score": 0.45454545454545453
+}

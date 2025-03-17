@@ -1,0 +1,30 @@
+{
+    "X": [
+        "Data/Inference/Artist/original_2.jpg",
+        "Data/Inference/Artist/original_1.jpg",
+        "Data/Inference/Artist/woman-pearl-earring_original.jpg",
+        "Data/Inference/Other-Artist/woman-pearl-earring_copy_3.jpg",
+        "Data/Inference/Other-Artist/woman-pearl-earring_copy_2.jpg",
+        "Data/Inference/Other-Artist/woman-pearl-earring_copy_1.jpg",
+        "Data/Inference/Other-Artist/woman-pearl-earring_copy_4.png"
+    ],
+    "y": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+    ],
+    "pred": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+    ],
+    "score": 0.42857142857142855
+}

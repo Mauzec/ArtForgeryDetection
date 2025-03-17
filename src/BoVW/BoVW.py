@@ -41,6 +41,7 @@ class BoVW(ClassifierMixin, BaseEstimator):
         while k < len(descriptor_list):
             if descriptor_list[k].shape[0] == 0:
                 descriptor_list.pop(k)
+                y.pop(k)
                 k -= 1
                 
             k += 1
@@ -70,6 +71,8 @@ class BoVW(ClassifierMixin, BaseEstimator):
         
         self._clf.fit(image_features, y)
         self.labels_ = self._clf.predict(image_features)
+        
+        return self
         
       
     def predict(self, X: list) -> NDArray:

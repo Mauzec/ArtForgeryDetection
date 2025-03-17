@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 from imutils import face_utils
 from CustomDescriptors.abstract.abstract import ABSDescriptor
+import os
 
 class FACE(ABSDescriptor):
     def __init__(self,
@@ -14,6 +15,14 @@ class FACE(ABSDescriptor):
         self.recognition_path = recognition_path
         
     def compute(self, image_path: str, index_process = -1, drawkps: int = 0) -> tuple[NDArray, NDArray]:
+        imagename = image_path.split("/")[-1]
+        cache_path = f"cache/FACE/{imagename}.npz"
+        if os.path.exists(cache_path):
+            print("YES")
+            loaded = np.load(cache_path)
+            kp = loaded['array1']
+            des = loaded['array2']
+            return kp, des
         
         detector = dlib.get_frontal_face_detector()
         predictor = dlib.shape_predictor(self.predictor_path)
@@ -37,7 +46,9 @@ class FACE(ABSDescriptor):
         if kp.shape[0] == 0:
             print(image_path)
         
+        np.savez(cache_path, array1=kp, array2=des)
         return kp, des
+        
     
     def __repr__(self) -> str:
         return "FACE"
